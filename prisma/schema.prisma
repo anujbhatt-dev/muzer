@@ -16,7 +16,7 @@ datasource db {
 
 model User {
   id String  @id @default(ulid())
-  email String
+  email String @unique
   streams Stream[]
   upvotes Upvote[]
 }
@@ -27,7 +27,12 @@ model Stream {
   active Boolean @default(true)
   upvotes Upvote[]
   userId String
+  title String @default("")
+  smallImg String @default("")
+  bigImage String @default("")
   user User @relation(fields: [userId], references: [id]) 
+  url   String
+  extractedId String
 }
 
 enum StreamType {
