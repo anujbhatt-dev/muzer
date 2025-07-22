@@ -5,6 +5,7 @@ import Appbar from "./components/Appbar";
 import {
   ClerkProvider
 } from '@clerk/nextjs'
+import Provider from "./components/Provider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -31,10 +32,11 @@ export default function RootLayout({
       <html lang="en">
         <body
           className={`${geistSans.variable} ${geistMono.variable} antialiased bg-zinc-950 text-white`}
-          >       
-            
-            <Appbar/>
-            {children}          
+          >  
+            <Provider>
+              <Appbar/>
+              {children}          
+            </Provider>     
         </body>
       </html>
     </ClerkProvider>

@@ -10,7 +10,7 @@ export default function Appbar() {
     
     
   return (
-    <div className='flex w-full justify-between p-4 px-20 bg-zinc-900 text-white font-semibold border-b border-black/40 shadow-md items-center'>
+    <div className='flex w-full justify-between p-4 px-20 bg-black text-white font-semibold border-b border-black/40 shadow-md items-center sticky top-0 right-0 left-0'>
         <div className='font-extrabold tracking-widest text-xl'>
             MUZER
         </div>

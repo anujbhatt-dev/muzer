@@ -1,17 +1,16 @@
 import Redirect from "./components/Redirect";
-import { Button } from "@/components/ui/button";
 import { Play, Users, Music } from "lucide-react";
+import GetStarted from "./components/GetStarted";
 
 export default function Home() {
+  
   return (
-    <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
+    <section className="relative min-h-[80vh] flex items-center justify-center overflow-hidden ">
+      
+      <Redirect/>      
+
       {/* Background Image with Overlay */}
-      <div className="absolute inset-0">
-        {/* <img 
-          src={heroImage} 
-          alt="Music streaming experience" 
-          className="w-full h-full object-cover opacity-40"
-        /> */}
+      <div className="absolute inset-0 ">
         <div className="absolute inset-0 bg-gradient-hero"></div>
       </div>
       
@@ -25,7 +24,7 @@ export default function Home() {
       {/* Content */}
       <div className="relative z-10 text-center max-w-6xl mx-auto px-6">
         <div className="mb-8 animate-fade-in">
-          <h1 className="text-pink-700 font-bold text-[10rem] uppercase">
+          <h1 className="text-pink-700 font-bold text-[4rem] uppercase">
             Muzer
           </h1>
           <p className="text-xl md:text-2xl text-muted-foreground mb-4">
@@ -55,16 +54,13 @@ export default function Home() {
 
         {/* CTA Buttons */}
         <div className="flex flex-col sm:flex-row gap-4 justify-center animate-fade-in delay-500">
-          <Button size="lg" className="text-lg bg-purple-900">
-            <Play className="w-5 h-5" />
-            Start Streaming
-          </Button>
-          <Button size="lg" className="text-lg bg-pink-700">
+          <GetStarted/>
+          <button className="text-lg bg-pink-900 cursor-pointer px-10 py-4 flex items-center gap-4 rounded-2xl">
             <Users className="w-5 h-5" />
-            Join a Stream
-          </Button>
+            Join Stream
+          </button>
         </div>
       </div>
-    </section>
+    </section>    
   );
 }
