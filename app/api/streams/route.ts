@@ -36,7 +36,7 @@ export async function POST(request:NextRequest){
         const stream = await prismaClient.stream.create(
             {
                 data:{
-                    userId:data.creatorId,
+                    creatorId:data.creatorId,
                     url:data.url,
                     extractedId,
                     type:"Youtube",
@@ -70,7 +70,7 @@ export async function GET(request:NextRequest){
     const creatorId = request.nextUrl.searchParams.get("creatorId")
     const stream = await prismaClient.stream.findMany({
         where:{
-            userId:creatorId ?? ""
+            creatorId:creatorId ?? ""
         }
     })
 

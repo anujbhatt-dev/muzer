@@ -12,20 +12,28 @@ export async function POST(request:NextRequest){
     try {
         const streams = await prismaClient.stream.findMany({
             where:{
-                userId:data.id             
+                creatorId:data.id             
             },
             include:{
                 _count:{
                     select:{
                         upvotes:true 
                     }
-                }
+                },     
+                upvotes:{
+                    where:{
+                        userId:data.id
+                    }
+                }           
             }
-        })    
+        })     
+              
+                
         return NextResponse.json({
             streams:streams.map(({_count,...rest}) =>({
                 ...rest,
-                upvotes:_count.upvotes
+                upvotes:_count.upvotes,
+                hasUpvoted: rest.upvotes.length ? true : false
             }))
         },{
             status:200

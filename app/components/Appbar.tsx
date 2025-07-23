@@ -3,6 +3,7 @@ import { SignedIn, SignedOut, SignOutButton, useClerk, UserButton, UserProfile, 
 import { SignInButton } from '@clerk/nextjs'
 import { LogOut } from 'lucide-react'
 import React from 'react'
+import GetStarted from './GetStarted'
 
 
 export default function Appbar() {
@@ -21,7 +22,7 @@ export default function Appbar() {
                         <LogOut onClick={()=>signOut()}/>
                     </SignedIn>
                     <SignedOut>
-                        <SignInButton mode="modal"/>
+                        <GetStarted/>
                     </SignedOut>
             </div>
         </div>

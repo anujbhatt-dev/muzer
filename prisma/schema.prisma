@@ -26,11 +26,11 @@ model Stream {
   type StreamType
   active Boolean @default(true)
   upvotes Upvote[]
-  userId String
+  creatorId String
   title String @default("")
   smallImg String @default("")
   bigImage String @default("")
-  user User @relation(fields: [userId], references: [id]) 
+  user User @relation(fields: [creatorId], references: [id]) 
   url   String
   extractedId String
 }
