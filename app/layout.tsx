@@ -31,7 +31,7 @@ export default function RootLayout({
     <ClerkProvider dynamic>
       <html lang="en">
         <body
-          className={`${geistSans.variable} ${geistMono.variable} antialiased bg-zinc-950 text-white`}
+          className={`${geistSans.variable} ${geistMono.variable} antialiased bg-zinc-950 text-white p-4 md:p-0`}
           >  
             <Provider>
               <Appbar/>

@@ -62,7 +62,7 @@ export default function StreamsView({streamerId,playVideo=false}:{streamerId:str
   
     let streamInterval: NodeJS.Timeout; // Correct type for setInterval in Node/Next.js
   
-    const fetchStreams = () => {
+    const fetchStreams = async () => {
       setStreamsLoading(true);
       try {
         streamInterval = setInterval( async () => {
@@ -77,9 +77,10 @@ export default function StreamsView({streamerId,playVideo=false}:{streamerId:str
           });
     
           const data = await res.json();
+          console.log("streams: "+JSON.stringify(data));
           setStreams(data.streams);    
           setCurrentStream(data.activeStream.stream.extractedId)      
-        }, 2000);
+        }, 5000);
   
       } catch (err) {
         console.error("Failed to fetch streams:", err);
@@ -89,10 +90,10 @@ export default function StreamsView({streamerId,playVideo=false}:{streamerId:str
     };
   
     fetchStreams();
-  
+    
     return () => {
       clearInterval(streamInterval);
-    };
+    };    
   }, [streamerId]);
 
   useEffect(()=>{
@@ -138,24 +139,24 @@ export default function StreamsView({streamerId,playVideo=false}:{streamerId:str
 
 
   return (
-    currentStream!="" ?
-    <div className='flex justify-center gap-x-8'>
+    currentStream!="" || streams && streams?.length>0 ?
+    <div className='flex flex-col-reverse md:flex-row justify-center gap-x-8 gap-y-4'>
         {(streams && streams.length) ? <div className='min-h-full max-w-3xl'>
               <div className='flex flex-col gap-y-4  '>
-                <div className='text-2xl mb-4 font-bold'>         
+                <div className='text-2xl mb-4 mt-8 md:mt-0 font-bold'>         
                   Upcoming Song
                 </div>  
                 {streams.map((stream, i) => (
                   
-                  <div key={stream.id} className='flex items-center justify-between bg-zinc-900/80 p-4 border border-zinc-400/20 shadow-md shadow-purple-900/10 rounded-lg'>
+                  <div key={stream.id} className='flex flex-col md:flex-row gap-y-4 md:items-center justify-between bg-zinc-900/80 p-4 border border-zinc-400/20 shadow-md shadow-purple-900/10 rounded-lg'>
                     <div className='overflow-hidden rounded-md '>
                         <img width={150} height={100} alt={stream.title} src={stream.bigImage} className='object-cover'/>
                     </div>
-                    <div className='flex-1 self-start ml-4'>
+                    <div className='flex-1 self-start md:ml-4'>
                       <p className='text-zinc-300'>{stream.title}</p>
                       <p className='text-white '><span className='text-zinc-500 text-sm'>votes:</span> <span>{stream.upvotes}</span></p>
                     </div>
-                    <div onClick={()=>handleVote(stream.id,i, stream.hasUpvoted?"downvote":"upvote")} className='bg-zinc-800 hover:bg-purple-800 cursor-pointer px-3 py-3 flex items-center self-start gap-4 rounded-lg shadow-xl active:shadow-md active:shadow-purple-500/50 hover:shadow-purple-500/10  hover:-translate-y-2 active:-translate-y-0 transition-all duration-150 mx-4'>
+                    <div onClick={()=>handleVote(stream.id,i, stream.hasUpvoted?"downvote":"upvote")} className='bg-zinc-800 hover:bg-purple-800 cursor-pointer px-3 py-3 flex items-center self-start gap-4 rounded-lg shadow-xl active:shadow-md active:shadow-purple-500/50 hover:shadow-purple-500/10  hover:-translate-y-2 active:-translate-y-0 transition-all duration-150 md:mx-4'>
                         <ThumbsUp className='w-4 h-4 ' fill={stream.hasUpvoted?"white":"transparent"}/>                        
                     </div>
                   </div>                  
@@ -182,7 +183,7 @@ export default function StreamsView({streamerId,playVideo=false}:{streamerId:str
           <div className="flex flex-col">
             <input
               placeholder="ADD YOUR SONG HERE"
-              className="border rounded-lg border-zinc-600/80 w-[30rem] mb-4 h-12 bg-zinc-950 text-center p-2 text-sm"
+              className="border rounded-lg border-zinc-600/80 w-full md:w-[30rem] mb-4 h-12 bg-zinc-950 text-center p-2 text-sm"
               type="text"
               value={songInput}
               onChange={(e) => setSongInput(e.target.value)}
