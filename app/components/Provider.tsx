@@ -29,8 +29,7 @@ export default function Provider({children}:{children:ReactNode}) {
         squareSize={20}
         direction='diagonal' // up, down, left, right, diagonal
         borderColor='black'
-        hoverFillColor='#222'
-        
+        hoverFillColor='#222'        
         />
        {children}
     </>

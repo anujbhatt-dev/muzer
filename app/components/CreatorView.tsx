@@ -9,7 +9,7 @@ export default function CreatorView({creatorId}:{creatorId:string}) {
     <div className='text-3xl uppercase text-center py-10 font-bold'>         
     <SplitText text='your fav creator' />
   </div>
-    <StreamsView streamerId={creatorId}/>
+    <StreamsView streamerId={creatorId} playVideo={false}/>
 </div>
   )
 }

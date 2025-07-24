@@ -11,6 +11,19 @@ const UpvoteSchema = z.object({
 export async function POST(request:NextRequest){
     try {
         const data = UpvoteSchema.parse(await request.json());
+        const hasUpvoted = await prismaClient.upvote.findFirst({
+            where:{
+                userId:data.userId,
+                streamId:data.streamId
+            }
+        })
+
+
+        if(!hasUpvoted){
+            console.log("has not upvoted "+JSON.stringify(data));
+            
+        }
+
         await prismaClient.upvote.delete({
             where:{
                 userId_streamId:{

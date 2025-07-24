@@ -1,5 +1,15 @@
-import { PrismaClient } from "../generated/prisma";
+// lib/prisma.ts (or wherever you store it)
 
-export const prismaClient = new PrismaClient();
+import { PrismaClient } from '../generated/prisma'
 
-// this is the best, introduce singleton
+const globalForPrisma = globalThis as unknown as {
+  prisma: PrismaClient | undefined
+}
+
+export const prismaClient =
+  globalForPrisma.prisma ??
+  new PrismaClient({
+    log: ['query'], // optional: for debugging
+  })
+
+if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prismaClient

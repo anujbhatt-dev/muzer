@@ -9,10 +9,10 @@ export default function Dashboard() {
 
   return (
     <div className='relative'>
-      <div className='text-3xl uppercase text-center py-10 font-bold'>         
+      <div className='text-3xl uppercase py-10 font-bold ml-20'>         
         <SplitText text='Dashboard' />
       </div>      
-      <StreamsView streamerId={userId as string}/>              
+      <StreamsView streamerId={userId as string} playVideo={true}/>              
     </div>
   )
 }
