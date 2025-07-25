@@ -1,14 +1,11 @@
 "use client"
 import React, { useEffect, useRef, useState } from 'react'
 import { useAuth } from '@clerk/nextjs';
-import Image from 'next/image';
 import { FileStack, Forward, ThumbsUp } from 'lucide-react';
 //@ts-ignore
 import youtubeThumbnail from "youtube-thumbnail"
 import { AnimatePresence, motion } from "motion/react"
 import YouTube from 'react-youtube';
-import { YT_REGEX } from '../lib/utils';
-import SplitText from './ui/SplitText/SplitText';
 
 interface YouTubeVideo {
     id: string;

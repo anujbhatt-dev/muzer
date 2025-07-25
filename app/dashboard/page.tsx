@@ -2,9 +2,8 @@
 import SplitText from "@/app/components/ui/SplitText/SplitText";
 import StreamsView from '../components/StreamsView';
 import { useAuth } from "@clerk/nextjs";
-import { useEffect, useState } from "react";
 import { toast } from 'sonner';
-import { Share, Share2 } from "lucide-react";
+import { Share2 } from "lucide-react";
 
 export default function Dashboard() {
   const { userId } = useAuth();

@@ -28,7 +28,7 @@ export default function Home() {
             Muzer
           </h1>
           <p className="text-xl md:text-2xl text-muted-foreground mb-4">
-            Join your favorite creators' music streams
+            Join your favorite creators&apos; music streams
           </p>
           <p className="text-lg md:text-xl max-w-3xl mx-auto text-white">
             Add songs, vote for favorites, and experience music together in real-time. 
@@ -54,9 +54,9 @@ export default function Home() {
 
         {/* CTA Buttons */}
         <div className="flex flex-col sm:flex-row gap-4 justify-center animate-fade-in delay-500">
-          <GetStarted/>
+          <GetStarted classes="text-lg bg-purple-900 hover:bg-purple-800 cursor-pointer px-10 py-4 flex items-center gap-4 rounded-2xl shadow-sm active:shadow-md active:shadow-purple-500/50 hover:shadow-purple-500/10  transition-all duration-150"/>
           <button className="text-lg bg-pink-900 cursor-pointer px-10 py-4 flex items-center gap-4 rounded-2xl">
-            <Users className="w-5 h-5" />
+            <Users className="w-4 h-4" />
             Join Stream
           </button>
         </div>

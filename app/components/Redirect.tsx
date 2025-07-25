@@ -1,8 +1,7 @@
 "use client"
 import { useAuth } from '@clerk/clerk-react';
-import { useClerk } from '@clerk/nextjs';
 import { useRouter } from 'next/navigation'
-import React, { useEffect } from 'react'
+import { useEffect } from 'react'
 
 
 export default function Redirect() {
