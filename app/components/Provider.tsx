@@ -9,7 +9,7 @@ export default function Provider({children}:{children:ReactNode}) {
   const [splashCursor,setSplashCursor] = useState<boolean>(false)
   return (
     <>
-        <div onClick={()=>setSplashCursor(!splashCursor)} className='fixed bottom-5 left-5 hover:-translate-y-2 active:-translate-y-0 transition-all duration-150'>
+        <div onClick={()=>setSplashCursor(!splashCursor)} className='fixed bottom-5 left-5 hover:-translate-y-2 active:-translate-y-0 transition-all duration-150 hidden lg:flex'>
           <GlareHover
             glareColor="#ffffff"
             glareOpacity={0.3}
@@ -22,7 +22,7 @@ export default function Provider({children}:{children:ReactNode}) {
               {splashCursor?"Normal Cursor":"Splash Cursor"}
             </h2>
           </GlareHover>
-        </div>
+        </div>        
         {splashCursor && <SplashCursor/>}
         <Squares 
         speed={0.5} 

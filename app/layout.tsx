@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Appbar from "./components/Appbar";
+import { Toaster } from 'sonner';
+
 import {
   ClerkProvider
 } from '@clerk/nextjs'
@@ -31,8 +33,9 @@ export default function RootLayout({
     <ClerkProvider dynamic>
       <html lang="en">
         <body
-          className={`${geistSans.variable} ${geistMono.variable} antialiased bg-zinc-950 text-white p-4 md:p-0`}
+          className={`${geistSans.variable} ${geistMono.variable} antialiased bg-zinc-950 text-white p-2 md:p-0`}
           >  
+            <Toaster />
             <Provider>
               <Appbar/>
               {children}          
