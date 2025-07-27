@@ -28,6 +28,21 @@ export async function POST(request:NextRequest){
 
 
         const videoDetails = await youtubesearchapi.GetVideoDetails(extractedId)
+
+        if (
+            !videoDetails ||
+            typeof videoDetails !== "object" ||
+            !videoDetails.title ||
+            !videoDetails.thumbnail ||
+            !Array.isArray(videoDetails.thumbnail.thumbnails)
+          ) {
+            return NextResponse.json(
+              { message: "Invalid or unavailable video. Thumbnail data missing." },
+              { status: 400 }
+            );
+          }
+
+
         const {title,thumbnail} = videoDetails
         const thumbnails = thumbnail.thumbnails
         thumbnails.sort((a:{width:number},b:{width:number})=> a.width > b.width ? -1 : 1)
