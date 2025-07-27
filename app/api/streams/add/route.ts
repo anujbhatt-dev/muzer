@@ -67,18 +67,17 @@ export async function POST(request:NextRequest){
 
 }
 
-export async function GET(request:NextRequest){
-    const data = await request.json();
-    const creatorId = request.nextUrl.searchParams.get("creatorId")
-    const stream = await prismaClient.stream.findMany({
-        where:{
-            creatorId:creatorId ?? ""
-        }
-    })
+// export async function GET(request:NextRequest){
+//     const creatorId = request.nextUrl.searchParams.get("creatorId")
+//     const stream = await prismaClient.stream.findMany({
+//         where:{
+//             creatorId:creatorId ?? ""
+//         }
+//     })
 
-    return NextResponse.json({
-        message:"success"
-    },{
-        status:200
-    })
-}
+//     return NextResponse.json({
+//         message:"success"
+//     },{
+//         status:200
+//     })
+// }
