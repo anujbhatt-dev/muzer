@@ -11,16 +11,16 @@ export default function Appbar() {
     
     
   return (
-    <div className='flex w-full justify-between p-4 px-4 md:px-20 bg-black text-white font-semibold border-b border-black/40 shadow-md items-center sticky top-0 right-0 left-0 z-50'>
+    <div className='flex w-full justify-between p-4 px-4 md:px-20 text-white font-semibold items-center sticky top-0 right-0 left-0 z-50'>
         <Link href="/" className='font-extrabold tracking-widest text-xl cursor-pointer'>
             NAACHOGAAO
         </Link>
-        {
+        {/* {
             isSignedIn &&
             <Link href={"/dashboard"} className='text-zinc-500 hover:text-[orangered] transition-all duration-75'>
                 Dashboard
             </Link>
-        }
+        } */}
         <div className='flex gap-5' >
                 <SignedIn>                        
                     <UserButton/>

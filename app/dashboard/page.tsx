@@ -1,14 +1,18 @@
 "use client"
-import SplitText from "@/app/components/ui/SplitText/SplitText";
 import StreamsView from '../components/StreamsView';
 import { useAuth } from "@clerk/nextjs";
 import { toast } from 'sonner';
 import { Share2 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+// import {io, Socket} from "socket.io-client"
+
+
+
 
 export default function Dashboard() {
   const { userId } = useAuth();
   const [username,setUsename] = useState("")
+  // const socketRef = useRef<Socket | null>(null);
 
   const handleCopy = () => {
     if (!userId) return;
@@ -47,28 +51,34 @@ export default function Dashboard() {
           console.log("error fetching username dashboard "+error);          
         }
     }
-
     fetchUserName();
+    
+    //  // Setup socket connection
+    //  const socket = io("http://localhost:4000", {
+    //   query: { userId }, // optional if you need to send userId
+    // });
+    // socketRef.current = socket;
+
+    // socket.on("connect", () => {
+    //   console.log("Connected with socket ID:", socket.id);
+    // });
+
+    // socket.on("disconnect", () => {
+    //   console.log("Socket disconnected");
+    // });
+
+    // // Cleanup
+    // return () => {
+    //   socket.disconnect();
+    // };
+
   },[])
 
 
 
 
   return (
-    <div className='relative '>
-      <div className='text-xl uppercase py-10 font-bold text-center md:text-left md:mx-20 flex justify-between items-center'>
-        {/* <SplitText text='Dashboard' /> */}
-        <div className="flex justify-center md:justify-start items-center">
-          <button
-            onClick={handleCopy}
-            style={{zIndex:1000}}
-            className="bg-purple-800 hover:bg-purple-700 text-white p-2 rounded-full text-sm transition cursor-pointer w-10 h-10 flex items-center justify-center fixed z-50 bottom-10 right-10"
-          >
-            <Share2 className="w-3 h-3"/>            
-          </button>          
-        </div>
-      </div>
-      
+    <div className='relative '>      
       <StreamsView streamerName={username as string} playVideo={true} />
     </div>
   );

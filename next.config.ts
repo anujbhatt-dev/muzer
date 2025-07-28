@@ -10,6 +10,11 @@ const nextConfig: NextConfig = {
         port: '',
         pathname: '**',
         search: '',
+      },
+      {
+        protocol:"http",
+        hostname:"img.youtube.com",
+
       }
     ],
   },

@@ -6,6 +6,9 @@ import { FileStack, Forward, ThumbsUp } from 'lucide-react';
 import youtubeThumbnail from "youtube-thumbnail"
 import { AnimatePresence, motion } from "motion/react"
 import YouTube from 'react-youtube';
+import { IconArrowNarrowRightDashed, IconArrowRampRight } from '@tabler/icons-react';
+import { AnimatedTooltip } from './animated-tooltip';
+import Image from 'next/image';
 
 interface YouTubeVideo {
     id: string;
@@ -21,6 +24,7 @@ interface YouTubeVideo {
     hasUpvoted: boolean
   }
 
+  
 
 
 
@@ -30,10 +34,12 @@ export default function StreamsView({streamerName,playVideo=false}:{streamerName
   const [streamsLoading,setStreamsLoading] = useState<boolean>(true);
   const [songInput, setSongInput] = useState("");
   const [thumbnail,setThumbnail] = useState("");
-  const [currentStream,setCurrentStream] = useState<string>("");
+  const [currentStream,setCurrentStream] = useState<YouTubeVideo | null>(null);
   const playerRef = useRef<any>(null);
   const now = new Date();
   const [seekTime,setSeekTime] = useState<Number>(0);
+  
+
 
 
   const handleSubmit = async () => {
@@ -47,6 +53,7 @@ export default function StreamsView({streamerName,playVideo=false}:{streamerName
       })
       setSongInput("")
       setThumbnail("")
+      
     } catch (error) {
       
     }
@@ -81,7 +88,7 @@ export default function StreamsView({streamerName,playVideo=false}:{streamerName
           const data = await res.json();
           // console.log("streams: "+JSON.stringify(data));
           setStreams(data.streams);    
-          setCurrentStream(data.activeStream.stream.extractedId)    
+          setCurrentStream(data.activeStream.stream)    
           const diff = Math.floor((now.getTime() - new Date(data.activeStream.stream.playedTs).getTime()) / 1000)
           console.log("seek time "+diff)          
           setSeekTime(diff+2)  
@@ -95,8 +102,13 @@ export default function StreamsView({streamerName,playVideo=false}:{streamerName
     };
   
     fetchStreams();
+
+      // Setup socket connection
     
-    return () => {
+
+    
+    // Cleanup
+    return () => {     
       clearInterval(streamInterval);
     };    
   }, [streamerName]);
@@ -132,18 +144,36 @@ export default function StreamsView({streamerName,playVideo=false}:{streamerName
 
   return (
     <div className='md:px-20 mb-[20rem]'>
+    <div className='mb-14 mt-8 flex justify-center gap-x-2 h-[4rem] max-w-4xl relative mx-auto '>
+        <input
+          placeholder="Add Youtube Song URL"
+          className="border rounded-full border-zinc-700/80 w-full mb-4 bg-transparent backdrop-blur-3xl text-center p-2 text-md h-full px-[5rem] lg:px-[10rem] outline-none"
+          type="text"
+          value={songInput}
+          onChange={(e) => setSongInput(e.target.value)}
+          />
+        {thumbnail!="" && !thumbnail.includes("null") 
+          &&
+          <Image width={1080} height={916} className="rounded-full  h-3/4 w-auto aspect-square absolute left-2 animate-spin top-[50%] -translate-y-[50%]" src={thumbnail} alt="" />            
+        }
+      
+      <button onClick={handleSubmit} className="absolute right-4 flex top-[50%] -translate-y-[50%] ">
+          <IconArrowNarrowRightDashed className='w-10 h-10'/>
+      </button>
 
-    {currentStream!="" || streams && streams?.length>0 ?
-    <div className='flex flex-col-reverse lg:flex-row justify-between gap-x-8 gap-y-4'>
+    </div>
+
+    {currentStream || streams && streams?.length>0 ?
+    <div className='flex flex-col-reverse lg:flex-row-reverse justify-between gap-x-4 gap-y-2'>
         {(streams && streams.length) ? 
         <div className='min-h-full  flex-1 '>
-              <div className='flex flex-col gap-y-4'>
-                <div className='text-2xl mb-4 mt-8 md:mt-0 font-bold'>         
-                  Upcoming Song
+              <div className='flex flex-col gap-y-4 '>
+                <div className='text-sm uppercase mt-8 md:mt-0 text-zinc-500'>         
+                  Watch Next
                 </div>
                 <AnimatePresence>
                 {streams.map((stream, i) => (
-                  
+                  <>
                   <motion.div  
                   layout 
                   initial={{ opacity: 0, y: 20, scale: 0.95 }}
@@ -167,6 +197,10 @@ export default function StreamsView({streamerName,playVideo=false}:{streamerName
                         <ThumbsUp className='w-4 h-4 ' fill={stream.hasUpvoted?"white":"transparent"}/>                        
                     </div>
                   </motion.div>                  
+                    {i==0 && <div className='text-sm uppercase mt-8 md:mt-0 text-zinc-500'>         
+                      Upcoming Song
+                    </div>}
+                    </>
                 ))}
                 </AnimatePresence>  
               </div>
@@ -182,48 +216,14 @@ export default function StreamsView({streamerName,playVideo=false}:{streamerName
               </div>
         </div>
           }
-        <div className="flex-1">
-          <div className='text-2xl mb-8 font-bold hidden lg:flex'>         
-            Add Song
-          </div>   
-          <div className="flex flex-col">
-            <input
-              placeholder="Add Youtube Song URL"
-              className="border rounded-lg border-zinc-600/80 w-full mb-4 h-12 bg-zinc-950 text-center p-2 text-md"
-              type="text"
-              value={songInput}
-              onChange={(e) => setSongInput(e.target.value)}
-              />
-            {thumbnail!="" && !thumbnail.includes("null") 
-              &&
-              <img className="rounded-xl mb-4 " src={thumbnail} alt="" />            
-            }
-            <button onClick={handleSubmit} className="text-lg bg-purple-900 hover:bg-purple-800 cursor-pointer px-10 py-2 gap-4 rounded-lg shadow-sm active:shadow-md active:shadow-purple-500/50 hover:shadow-purple-500/10  lg:max-w-[20rem] mx-auto transition-all duration-150 text-center flex justify-center w-full">
-                <FileStack/>
-                 Add to Queue
-            </button>
-          </div>
-
+        <div className="flex-1 flex flex-col gap-y-8 bg-black/30 backdrop-blur-3xl p-1 rounded-lg">
           {/* current stream */}
-
-
-          <div className='text-2xl  mt-10 font-bold hidden lg:flex'>         
-            Now Playing
-          </div>   
+          <div className=''>           
           <div>
-          <div className=''>
+          <div className='rounded-[10px] overflow-hidden mb-4'>
           {streams && (
-            // <iframe
-            // className="w-full my-4 rounded-xl"
-            // width="560"
-            // height="315"
-            // src={`https://www.youtube.com/embed/${currentStream}?autoplay=1&controls=0`}
-            // title="YouTube video player"
-            // allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-            // allowFullScreen
-            // ></iframe>
             <YouTube 
-              videoId={currentStream} 
+              videoId={currentStream?.extractedId} 
               onEnd={playNext}  
               onReady={(e)=>{
                 playerRef.current = e.target
@@ -239,16 +239,31 @@ export default function StreamsView({streamerName,playVideo=false}:{streamerName
               mute: 0,
               modestbranding: 1,
               controls: 1,
-            }}} className='my-4 rounded-md mx-auto ' />
+            }}} className='mx-auto' />
           )}
           </div>
+          
+
           {playVideo &&
-            <button onClick={playNext} className="text-lg bg-[orangered] hover:bg-[orangered]/90 cursor-pointer px-10 py-2 gap-4 rounded-lg shadow-sm active:shadow-md active:shadow-[orangered]/50 hover:shadow-[orangered]/10  lg:max-w-[20rem] mx-auto transition-all duration-150 text-center w-full flex justify-center">
-                <Forward/>
-                Play Next
-            </button>
+            // <button onClick={playNext} className="text-lg bg-[orangered] hover:bg-[orangered]/90 cursor-pointer px-10 py-2 gap-4 rounded-lg shadow-sm active:shadow-md active:shadow-[orangered]/50 hover:shadow-[orangered]/10  mx-auto transition-all duration-150 text-center flex justify-center">
+            // </button>
+            <div onClick={playNext} className='flex flex-col lg:flex-row mx-auto lg:items-center justify-between cursor-pointer  pr-6 pl-2 pb-2'>              
+              <div className='lg:w-1/2'>
+                {currentStream?.title}
+              </div>
+              <div className='flex items-center justify-end cursor-pointer gap-x-2'>
+                <div className='text-zinc-500 text-sm uppercase'>
+                  Upcoming Song
+                </div>
+                <IconArrowNarrowRightDashed className='w-14 h-14 hover:animate-pulse'/>
+                <AnimatedTooltip items={[{id:1,name:"Next Stream",designation:streams && streams[0].title || "" ,image:streams && streams[0].smallImg || ""}]}/>
+              </div>
+            </div>
           }
           </div>
+        </div>
+        {/*  */}
+        
         </div>
     </div>
     :
