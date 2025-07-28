@@ -92,7 +92,7 @@ export default function StreamsView({streamerName,playVideo=false}:{streamerName
           const diff = Math.floor((now.getTime() - new Date(data.activeStream.stream.playedTs).getTime()) / 1000)
           console.log("seek time "+diff)          
           setSeekTime(diff+2)  
-        }, 5000);
+        }, 30000);
   
       } catch (err) {
         console.error("Failed to fetch streams:", err);
@@ -251,13 +251,16 @@ export default function StreamsView({streamerName,playVideo=false}:{streamerName
               <div className='lg:w-1/2'>
                 {currentStream?.title}
               </div>
-              <div className='flex items-center justify-end cursor-pointer gap-x-2'>
-                <div className='text-zinc-500 text-sm uppercase'>
-                  Upcoming Song
-                </div>
-                <IconArrowNarrowRightDashed className='w-14 h-14 hover:animate-pulse'/>
-                <AnimatedTooltip items={[{id:1,name:"Next Stream",designation:streams && streams?.[0]?.title || "" ,image:streams && streams?.[0]?.smallImg || ""}]}/>
-              </div>
+              {
+                streams && streams.length>0 &&
+                  <div className='flex items-center justify-end cursor-pointer gap-x-2'>
+                    <div className='text-zinc-500 text-sm uppercase'>
+                      Upcoming Song
+                    </div>
+                    <IconArrowNarrowRightDashed className='w-14 h-14 hover:animate-pulse'/>
+                    <AnimatedTooltip items={[{id:1,name:"Next Stream",designation:streams && streams?.[0]?.title || "" ,image:streams && streams?.[0]?.smallImg || ""}]}/>
+                  </div>
+              }
             </div>
           }
           </div>

@@ -40,9 +40,7 @@ export async function POST(request: NextRequest) {
     if (
       !videoDetails ||
       typeof videoDetails !== "object" ||
-      !videoDetails.title ||
-      !videoDetails.thumbnail ||
-      !Array.isArray(videoDetails.thumbnail.thumbnails)
+      !videoDetails.title 
     ) {
       return NextResponse.json(
         {
@@ -94,8 +92,8 @@ export async function POST(request: NextRequest) {
         extractedId,
         type: "Youtube",
         title,
-        smallImg: thumbnails.at(-1)?.url || "",
-        bigImage: thumbnails[0]?.url || "",
+        smallImg: thumbnails.at(-1)?.url || "https://fastly.picsum.photos/id/237/200/300.jpg?hmac=TmmQSbShHz9CdQm0NkEjx1Dyh_Y984R9LpNrpvH2D_U",
+        bigImage: thumbnails[0]?.url || "https://fastly.picsum.photos/id/237/200/300.jpg?hmac=TmmQSbShHz9CdQm0NkEjx1Dyh_Y984R9LpNrpvH2D_U",
       },
     });
 
