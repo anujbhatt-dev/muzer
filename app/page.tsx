@@ -1,8 +1,10 @@
 import Redirect from "./components/Redirect";
 import { Play, Users, Music } from "lucide-react";
 import GetStarted from "./components/GetStarted";
+import { SignedIn, SignedOut } from "@clerk/nextjs";
 
 export default function Home() {
+
   
   return (
     <section className="relative min-h-[80vh] flex items-center justify-center overflow-hidden ">
@@ -24,7 +26,7 @@ export default function Home() {
       {/* Content */}
       <div className="relative z-10 text-center max-w-6xl mx-auto px-6">
         <div className="mb-8 animate-fade-in">
-          <h1 className="text-pink-700 font-bold text-[4rem] uppercase">
+          <h1 className="text-pink-700 font-bold text-[2.5rem] uppercase">
             Naachogaao
           </h1>
           <p className="text-xl md:text-2xl text-muted-foreground mb-4">
@@ -54,8 +56,11 @@ export default function Home() {
 
         {/* CTA Buttons */}
         <div className="flex flex-col sm:flex-row gap-4 justify-center animate-fade-in delay-500">
-          <GetStarted classes="text-lg bg-purple-900 hover:bg-purple-800 cursor-pointer px-10 py-4 flex items-center gap-4 rounded-2xl shadow-sm active:shadow-md active:shadow-purple-500/50 hover:shadow-purple-500/10  transition-all duration-150"/>
-          <button className="text-lg bg-pink-900 cursor-pointer px-10 py-4 flex items-center gap-4 rounded-2xl">
+          <SignedOut>
+
+          <GetStarted classes="text-lg bg-purple-900 hover:bg-purple-800 cursor-pointer px-10 py-4 flex items-center gap-4 rounded-2xl shadow-sm active:shadow-md active:shadow-purple-500/50 hover:shadow-purple-500/10  transition-all duration-150 justify-center"/>
+          </SignedOut>
+          <button className="text-lg bg-pink-900 cursor-pointer px-10 py-4 flex items-center gap-4 rounded-2xl justify-center">
             <Users className="w-4 h-4" />
             Join Stream
           </button>

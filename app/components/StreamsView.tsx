@@ -92,7 +92,7 @@ export default function StreamsView({streamerName,playVideo=false}:{streamerName
           const diff = Math.floor((now.getTime() - new Date(data.activeStream.stream.playedTs).getTime()) / 1000)
           console.log("seek time "+diff)          
           setSeekTime(diff+2)  
-        }, 30000);
+        }, 5000);
   
       } catch (err) {
         console.error("Failed to fetch streams:", err);
