@@ -33,11 +33,11 @@ export default function StreamsView({streamerName,playVideo=false}:{streamerName
   const [streams,setStreams] = useState<YouTubeVideo[] | null>(null);
   const [streamsLoading,setStreamsLoading] = useState<boolean>(true);
   const [songInput, setSongInput] = useState("");
-  const [thumbnail,setThumbnail] = useState("");
+  const [thumbnail,setThumbnail] = useState<string | null>(null);
   const [currentStream,setCurrentStream] = useState<YouTubeVideo | null>(null);
   const playerRef = useRef<any>(null);
   const now = new Date();
-  const [seekTime,setSeekTime] = useState<Number>(0);
+  const [seekTime,setSeekTime] = useState<number>(0);
   
 
 
@@ -69,31 +69,37 @@ export default function StreamsView({streamerName,playVideo=false}:{streamerName
   useEffect(() => {
     if (!streamerName) return;
   
-    let streamInterval: NodeJS.Timeout; // Correct type for setInterval in Node/Next.js
+    let streamInterval: NodeJS.Timeout;
   
     const fetchStreams = async () => {
-      setStreamsLoading(true);
       try {
-        streamInterval = setInterval( async () => {
-          // Add your polling logic here if needed
-          const res = await fetch("/api/streams", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ 
-              username: streamerName,
-              asker: userId,
-            }),
-          });
-    
-          const data = await res.json();
-          // console.log("streams: "+JSON.stringify(data));
-          setStreams(data.streams);    
-          setCurrentStream(data.activeStream.stream)    
-          const diff = Math.floor((now.getTime() - new Date(data.activeStream.stream.playedTs).getTime()) / 1000)
-          console.log("seek time "+diff)          
-          setSeekTime(diff+2)  
-        }, 5000);
+        const res = await fetch("/api/streams", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            username: streamerName,
+            asker: userId,
+          }),
+        });
   
+        const data = await res.json();
+        setStreams(data.streams);
+  
+        if (data.activeStream?.stream) {
+          const stream = data.activeStream.stream;
+          setCurrentStream(stream);
+  
+          if (stream.playedTs) {
+            const diff = Math.floor(
+              (new Date().getTime() - new Date(stream.playedTs).getTime()) / 1000
+            );
+            console.log("seek time", diff);
+            setSeekTime(diff + 2);
+          }
+        } else {
+          setCurrentStream(null);
+          setSeekTime(0);
+        }
       } catch (err) {
         console.error("Failed to fetch streams:", err);
       } finally {
@@ -101,17 +107,15 @@ export default function StreamsView({streamerName,playVideo=false}:{streamerName
       }
     };
   
+    // Initial call
     fetchStreams();
-
-      // Setup socket connection
-    
-
-    
-    // Cleanup
-    return () => {     
-      clearInterval(streamInterval);
-    };    
-  }, [streamerName]);
+    // Poll every 5 seconds
+    streamInterval = setInterval(fetchStreams, 5000);
+  
+    // Cleanup on unmount
+    return () => clearInterval(streamInterval);
+  }, [streamerName, userId]);
+  
 
 
   const playNext = async () =>{
@@ -152,10 +156,15 @@ export default function StreamsView({streamerName,playVideo=false}:{streamerName
           value={songInput}
           onChange={(e) => setSongInput(e.target.value)}
           />
-        {thumbnail!="" && !thumbnail.includes("null") 
-          &&
-          <Image width={1080} height={916} className="rounded-full  h-3/4 w-auto aspect-square absolute left-2 animate-spin top-[50%] -translate-y-[50%]" src={thumbnail} alt="" />            
-        }
+        {thumbnail && (
+          <Image
+            width={1080}
+            height={916}
+            className="rounded-full h-3/4 w-auto aspect-square absolute left-2 animate-spin top-[50%] -translate-y-[50%]"
+            src={thumbnail}
+            alt=""
+          />
+        )}
       
       <button onClick={handleSubmit} className="absolute right-4 flex top-[50%] -translate-y-[50%] ">
           <IconArrowNarrowRightDashed className='w-10 h-10'/>
@@ -184,7 +193,7 @@ export default function StreamsView({streamerName,playVideo=false}:{streamerName
                     ease: [0.25, 0.46, 0.45, 0.94],
                     delay: i * 0.05,
                   }}
-                  key={stream.id} 
+                  key={stream.id+i} 
                   className='flex flex-wrap md:flex-row gap-x-2  gap-y-4 md:items-center justify-between bg-zinc-900/80 p-2 lg:p-4 border border-zinc-400/20 shadow-md shadow-purple-900/10 rounded-lg'>
                     <div className=''>
                         <img width={150} height={100} alt={stream.title} src={stream.bigImage} className='object-cover w-[6rem] rounded-md'/>
@@ -221,7 +230,7 @@ export default function StreamsView({streamerName,playVideo=false}:{streamerName
           <div className=''>           
           <div>
           <div className='rounded-[10px] overflow-hidden mb-4'>
-          {streams && (
+          {currentStream?.extractedId && (
             <YouTube 
               videoId={currentStream?.extractedId} 
               onEnd={playNext}  
@@ -290,9 +299,9 @@ export default function StreamsView({streamerName,playVideo=false}:{streamerName
                   value={songInput}
                   onChange={(e) => setSongInput(e.target.value)}
                   />
-                {thumbnail!="" && !thumbnail.includes("null") 
+                {thumbnail!=""  
                   &&
-                  <img className="rounded-xl mb-4 " src={thumbnail} alt="" />            
+                  <img className="rounded-xl mb-4 " src={thumbnail ?? "https://fastly.picsum.photos/id/237/200/300.jpg?hmac=TmmQSbShHz9CdQm0NkEjx1Dyh_Y984R9LpNrpvH2D_U"} alt="" />            
                 }
                 <button onClick={handleSubmit} className="w-[20rem] text-lg bg-purple-900 hover:bg-purple-800 cursor-pointer px-10 py-2 gap-4 rounded-lg shadow-xl active:shadow-md active:shadow-purple-500/50 hover:shadow-purple-500/10  max-w-sm mx-auto transition-all duration-150 text-center flex justify-center">
                     <FileStack/>

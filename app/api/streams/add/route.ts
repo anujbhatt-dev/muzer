@@ -25,7 +25,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Extract video ID    
-    const extractedId = extractYoutubeId(data.url)
+    const extractedId = extractYoutubeId(data.url);
 
     if (!extractedId) {
       return NextResponse.json(
@@ -52,8 +52,20 @@ export async function POST(request: NextRequest) {
     }
 
     const { title, thumbnail } = videoDetails;
+
+    if (!Array.isArray(thumbnail?.thumbnails) || thumbnail.thumbnails.length === 0) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: "Thumbnail data missing or in unexpected format.",
+        },
+        { status: 400 }
+      );
+    }
+
     const thumbnails = thumbnail.thumbnails;
-    thumbnails.sort((a: { width: number }, b: { width: number }) => b.width - a.width);
+
+    thumbnails.sort((a: { width?: number }, b: { width?: number }) => (b?.width ?? 0) - (a?.width ?? 0));
 
     // Get user by username
     const user = await prismaClient.user.findUnique({
@@ -73,7 +85,7 @@ export async function POST(request: NextRequest) {
       where: {
         creatorId: user.id,
         extractedId,
-        played:false
+        played: false,
       },
     });
 
