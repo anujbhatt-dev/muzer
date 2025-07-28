@@ -20,7 +20,8 @@ export async function POST(request: NextRequest) {
     if (!user) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
-
+  console.log("user: "+JSON.stringify(user));
+  
     return NextResponse.json({ username: user.username });
   } catch (error) {
     if (error instanceof z.ZodError) {
