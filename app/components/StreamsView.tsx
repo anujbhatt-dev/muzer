@@ -256,7 +256,7 @@ export default function StreamsView({streamerName,playVideo=false}:{streamerName
                   Upcoming Song
                 </div>
                 <IconArrowNarrowRightDashed className='w-14 h-14 hover:animate-pulse'/>
-                <AnimatedTooltip items={[{id:1,name:"Next Stream",designation:streams && streams[0].title || "" ,image:streams && streams[0].smallImg || ""}]}/>
+                <AnimatedTooltip items={[{id:1,name:"Next Stream",designation:streams && streams?.[0]?.title || "" ,image:streams && streams?.[0]?.smallImg || ""}]}/>
               </div>
             </div>
           }
