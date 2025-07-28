@@ -3,17 +3,29 @@ import { NextRequest, NextResponse } from "next/server";
 import z, { string } from "zod";
 
 const MyStreamSchema = z.object({
-    id:z.string(),
+    username:z.string(),
     asker:z.string()
 })
 
 export async function POST(request:NextRequest){
     const data = MyStreamSchema.parse(await request.json());    
     try {
+        
+        const user = await prismaClient.user.findUnique({
+            where: { username: data.username },
+            select: { id: true },
+          });
+      
+          if (!user) {
+            return NextResponse.json({ error: "User not found" }, { status: 404 });
+          }
+
+
+
         const [streams,activeStream] = await Promise.all([
             prismaClient.stream.findMany({
                 where:{
-                    creatorId:data.id,
+                    creatorId:user.id,
                     played:false             
                 },
                 include:{
@@ -28,15 +40,20 @@ export async function POST(request:NextRequest){
                         }
                     }           
                 },
-                orderBy: {
-                    upvotes: {
-                    _count: 'desc', // or 'asc'
+                orderBy: [
+                    {
+                      upvotes: {
+                        _count: 'desc',
+                      },
                     },
-                },
+                    {
+                      createdAt: 'asc', // older streams come first if upvotes are equal
+                    },
+                  ],
             }),
             prismaClient.currentStream.findFirst({
                 where:{
-                    userId:data.id
+                    userId:user.id
                 },
                 include:{
                     stream:true

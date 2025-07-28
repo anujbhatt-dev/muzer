@@ -7,7 +7,7 @@ export default function Home() {
   return (
     <section className="relative min-h-[80vh] flex items-center justify-center overflow-hidden ">
       
-      <Redirect/>      
+      {/* <Redirect/>       */}
 
       {/* Background Image with Overlay */}
       <div className="absolute inset-0 ">
@@ -25,7 +25,7 @@ export default function Home() {
       <div className="relative z-10 text-center max-w-6xl mx-auto px-6">
         <div className="mb-8 animate-fade-in">
           <h1 className="text-pink-700 font-bold text-[4rem] uppercase">
-            Muzer
+            Naachogaao
           </h1>
           <p className="text-xl md:text-2xl text-muted-foreground mb-4">
             Join your favorite creators&apos; music streams

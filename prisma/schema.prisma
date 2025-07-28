@@ -19,6 +19,7 @@ model User {
   email String @unique
   streams Stream[]
   upvotes Upvote[]
+  username String?  @unique
 }
 
 model Stream {
@@ -37,7 +38,6 @@ model Stream {
   played Boolean @default(false)
   playedTs DateTime? 
   createdAt DateTime @default(now())
-
 }
 
 enum StreamType {

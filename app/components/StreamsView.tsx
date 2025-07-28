@@ -24,7 +24,7 @@ interface YouTubeVideo {
 
 
 
-export default function StreamsView({streamerId,playVideo=false}:{streamerId:string,playVideo:boolean}) {
+export default function StreamsView({streamerName,playVideo=false}:{streamerName:string,playVideo:boolean}) {
   const {userId} = useAuth()
   const [streams,setStreams] = useState<YouTubeVideo[] | null>(null);
   const [streamsLoading,setStreamsLoading] = useState<boolean>(true);
@@ -41,7 +41,7 @@ export default function StreamsView({streamerId,playVideo=false}:{streamerId:str
       await fetch("/api/streams/add",{
         method:"POST",
         body:JSON.stringify({
-          creatorId:streamerId,
+          creatorName:streamerName,
           url:songInput
         })
       })
@@ -60,7 +60,7 @@ export default function StreamsView({streamerId,playVideo=false}:{streamerId:str
   
 
   useEffect(() => {
-    if (!streamerId) return;
+    if (!streamerName) return;
   
     let streamInterval: NodeJS.Timeout; // Correct type for setInterval in Node/Next.js
   
@@ -73,7 +73,7 @@ export default function StreamsView({streamerId,playVideo=false}:{streamerId:str
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ 
-              id: streamerId,
+              username: streamerName,
               asker: userId,
             }),
           });
@@ -99,7 +99,7 @@ export default function StreamsView({streamerId,playVideo=false}:{streamerId:str
     return () => {
       clearInterval(streamInterval);
     };    
-  }, [streamerId]);
+  }, [streamerName]);
 
 
   const playNext = async () =>{
