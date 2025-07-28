@@ -101,19 +101,6 @@ export default function StreamsView({streamerId,playVideo=false}:{streamerId:str
     };    
   }, [streamerId]);
 
-  useEffect(()=>{
-    const fetchCurrentStream = async  () => {
-        const result =  await fetch("",{
-            method:"POST",
-            body:JSON.stringify({
-                creatorId:streamerId
-            })
-        })
-        const data = await result.json()
-        setCurrentStream(data.extractedId)
-    }
-    fetchCurrentStream()
-  },[])
 
   const playNext = async () =>{
     try {

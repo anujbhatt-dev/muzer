@@ -19,7 +19,7 @@ export default function Dashboard() {
         toast.success("Link copied!",{
           style:{
             color:"green",
-            background:"rgba(0,0,0,0.5)",
+            background:"rgba(0,0,0,1)",
             border:"1px solid green"
           }
         })
@@ -32,13 +32,14 @@ export default function Dashboard() {
   return (
     <div className='relative '>
       <div className='text-xl uppercase py-10 font-bold text-center md:text-left md:mx-20 flex justify-between items-center'>
-        <SplitText text='Dashboard' />
+        {/* <SplitText text='Dashboard' /> */}
         <div className="flex justify-center md:justify-start items-center">
           <button
             onClick={handleCopy}
-            className="bg-purple-800 hover:bg-purple-700 text-white px-4 py-2 rounded-lg text-sm transition cursor-pointer"
+            style={{zIndex:1000}}
+            className="bg-purple-800 hover:bg-purple-700 text-white p-2 rounded-full text-sm transition cursor-pointer w-10 h-10 flex items-center justify-center fixed z-50 bottom-10 right-10"
           >
-            <Share2/>            
+            <Share2 className="w-3 h-3"/>            
           </button>          
         </div>
       </div>
