@@ -245,7 +245,9 @@ export default function StreamsView({streamerName,playVideo=false}:{streamerName
                   className="relative group/card  dark:hover:shadow-2xl dark:hover:shadow-emerald-500/[0.1]  backdrop-blur-sm bg-black/80 dark:border-white/[0.2] border-black/[0.1] rounded-xl p-6 border flex flex-col justify-center items-center w-auto ">
                   <CardItem 
                     translateZ="50"
-                    className="text-lg font-bold text-zinc-300 w-full text-center uppercase ">         
+                    translatex="-10"
+                    translateY="-10"
+                    className="text-lg font-bold text-zinc-300 w-full text-center uppercase hover:scale-150">         
                     Add More <span className='text-[orangered]'>Songs</span> in the queue
                   </CardItem>
                   
