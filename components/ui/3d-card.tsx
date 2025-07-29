@@ -126,6 +126,7 @@ export const CardItem = ({
   }, [isMouseEntered]);
 
   const handleAnimations = () => {
+    
     if (!ref.current) return;
     if (isMouseEntered) {
       ref.current.style.transform = `translateX(${translateX}px) translateY(${translateY}px) translateZ(${translateZ}px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) rotateZ(${rotateZ}deg)`;
@@ -135,9 +136,8 @@ export const CardItem = ({
   };
 
   return (
-    <Tag
-      ref={ref}
-      className={cn("w-fit transition duration-200 ease-linear", className)}
+    // @ts-ignore
+    <Tag ref={ref} className={cn("w-fit transition duration-200 ease-linear", className)}
       {...rest}
     >
       {children}
