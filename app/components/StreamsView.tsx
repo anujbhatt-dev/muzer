@@ -1,12 +1,12 @@
 "use client"
 import React, { useEffect, useRef, useState } from 'react'
 import { useAuth } from '@clerk/nextjs';
-import { FileStack, Forward, ThumbsUp } from 'lucide-react';
+import { ThumbsUp } from 'lucide-react';
 //@ts-ignore
 import youtubeThumbnail from "youtube-thumbnail"
 import { AnimatePresence, motion } from "motion/react"
 import YouTube from 'react-youtube';
-import { IconArrowNarrowRightDashed, IconArrowRampRight } from '@tabler/icons-react';
+import { IconArrowNarrowRightDashed } from '@tabler/icons-react';
 import { AnimatedTooltip } from './animated-tooltip';
 import Image from 'next/image';
 import { CardBody, CardContainer, CardItem } from '@/components/ui/3d-card';
@@ -39,8 +39,8 @@ export default function StreamsView({streamerName,playVideo=false}:{streamerName
   const [thumbnail,setThumbnail] = useState<string | null>(null);
   const [currentStream,setCurrentStream] = useState<YouTubeVideo | null>(null);
   const playerRef = useRef<any>(null);
-  const now = new Date();
   const [seekTime,setSeekTime] = useState<number>(0);
+  const [nextLoading,setNextLoading] = useState(false);
   
 
 
@@ -126,15 +126,21 @@ export default function StreamsView({streamerName,playVideo=false}:{streamerName
 
 
   const playNext = async () =>{
+    if (nextLoading) return;
     try {
+      setNextLoading(true)
       await fetch(`/api/streams/next`,{
           method:"POST",
           body:JSON.stringify({              
               creatorId:userId
           })
-      })
+      })      
     } catch (error) {
       
+    } finally {
+      setTimeout(() => {
+        setNextLoading(false)        
+      }, 2000);
     }
   }
 
@@ -214,7 +220,7 @@ export default function StreamsView({streamerName,playVideo=false}:{streamerName
                         <ThumbsUp className='w-4 h-4 ' fill={stream.hasUpvoted?"white":"transparent"}/>                        
                     </div>
                   </motion.div>                  
-                    {streams.length>1 && i==0 && <div className='text-sm uppercase mt-8 text-zinc-500'>         
+                    {streams.length>1 && i==0 && <div className='text-sm uppercase mt-4 text-zinc-500'>         
                       Upcoming Song
                     </div>}
                     </div>
@@ -233,7 +239,6 @@ export default function StreamsView({streamerName,playVideo=false}:{streamerName
                 waveFrequency={3}
                 waveSpeed={0.05}                
               />        
-              {/* <div className='flex items-center justify-center bg-zinc-900/80 p-4 border border-zinc-400/20 shadow-md shadow-purple-900/10 rounded-lg flex-1 w-full'> */}
               <CardContainer  className="inter-var h-full w-full flex-1" containerClassName='flex-1  absolute -translate-x-[50%] left-[50%]'>
               <BackgroundGradient>
                 <CardBody
@@ -250,7 +255,7 @@ export default function StreamsView({streamerName,playVideo=false}:{streamerName
               {/* </div> */}
         </div>
           }
-        <div className="flex-1 flex flex-col gap-y-8 bg-black/30 backdrop-blur-3xl p-1 rounded-2xl">
+        <div className="flex-1 flex flex-col gap-y-8 bg-black/70 backdrop-blur-3xl p-2 rounded-2xl">
           {/* current stream */}
           <div className=''>           
           <div>
@@ -260,39 +265,37 @@ export default function StreamsView({streamerName,playVideo=false}:{streamerName
 
             <YouTube 
               videoId={currentStream?.extractedId} 
+              title={currentStream?.title} 
+              iframeClassName='h-[200px] lg:h-[500px] w-full'
               onEnd={playNext}  
+              loading="eager"
               onReady={(e)=>{
                 playerRef.current = e.target
                 playerRef.current.seekTo(seekTime)
                 playerRef.current.playVideo();
               }}
               opts={{
-                width:"100%",
-              height:"500px",
               playerVars: {              
-              // https://developers.google.com/youtube/player_parameters
               autoplay: 1,
               mute: 0,
               modestbranding: 1,
               controls: 1,
-            }}} className='mx-auto rounded-lg overflow-hidden ' />
+            }}} className='mx-auto rounded-lg overflow-hidden' />
             </BackgroundGradient>
           )}
           </div>
           
 
           {playVideo &&
-            // <button onClick={playNext} className="text-lg bg-[orangered] hover:bg-[orangered]/90 cursor-pointer px-10 py-2 gap-4 rounded-lg shadow-sm active:shadow-md active:shadow-[orangered]/50 hover:shadow-[orangered]/10  mx-auto transition-all duration-150 text-center flex justify-center">
-            // </button>
-            <div onClick={playNext} className='flex flex-col lg:flex-row mx-auto lg:items-center justify-between cursor-pointer  pr-6 pl-2 pb-2'>              
-              <div className='lg:w-1/2'>
+            <div onClick={playNext} className={`${nextLoading && "opacity-30"} flex flex-col lg:flex-row mx-auto lg:items-center justify-between cursor-pointer  pr-6 pl-2 pb-2`}>              
+              <div className='lg:w-2/3 text-sm opacity-80 hover:opacity-100 transition-all duration-150'>
                 {currentStream?.title}
               </div>
               {
                 streams && streams.length>0 &&
                   <div className='flex items-center justify-end cursor-pointer gap-x-2'>
                     <div className='text-zinc-500 text-sm uppercase'>
-                      Upcoming Song
+                      Next
                     </div>
                     <IconArrowNarrowRightDashed className='w-14 h-14 hover:animate-pulse'/>
                     <AnimatedTooltip items={[{id:1,name:"Next Stream",designation:streams && streams?.[0]?.title || "" ,image:streams && streams?.[0]?.smallImg || ""}]}/>
@@ -315,7 +318,7 @@ export default function StreamsView({streamerName,playVideo=false}:{streamerName
                 className="bg-gray-50 relative group/card  dark:hover:shadow-2xl dark:hover:shadow-emerald-500/[0.1] dark:bg-black/50 dark:border-white/[0.2] border-black/[0.1] h-[15rem] rounded-xl p-6 border flex flex-col justify-center items-center w-auto lg:w-[55rem]">
                 <CardItem 
                   translateZ="50"
-                  className="text-lg font-bold text-zinc-700 w-full text-center uppercase ">         
+                  className="text-lg font-bold text-zinc-200 w-full text-center uppercase ">         
                   <span className='text-[orangered]'>Streams</span> Loading
                 </CardItem>            
               </CardBody>
@@ -329,7 +332,7 @@ export default function StreamsView({streamerName,playVideo=false}:{streamerName
                   className="bg-gray-50 relative group/card  dark:hover:shadow-2xl dark:hover:shadow-emerald-500/[0.1] dark:bg-black/50 dark:border-white/[0.2] border-black/[0.1] w-auto sm:w-[30rem] h-auto rounded-xl p-6 border">
                   <CardItem 
                     translateZ="50"
-                    className="text-sm font-bold text-zinc-700 w-full text-right uppercase ">         
+                    className="text-sm font-bold text-zinc-200 w-full text-right uppercase ">         
                     Start <span className='text-[orangered]'>Streaming</span>
                   </CardItem>   
                   {thumbnail && thumbnail!="" && !thumbnail.includes("null") &&
@@ -362,7 +365,7 @@ export default function StreamsView({streamerName,playVideo=false}:{streamerName
                className="bg-gray-50 relative group/card  dark:hover:shadow-2xl dark:hover:shadow-emerald-500/[0.1] dark:bg-black/50 dark:border-white/[0.2] border-black/[0.1] h-[15rem] rounded-xl p-6 border flex flex-col justify-center items-center w-auto lg:w-[55rem]">
               <CardItem 
                 translateZ="50"
-                className="text-lg font-bold text-zinc-700 w-full text-center uppercase ">         
+                className="text-lg font-bold text-zinc-200 w-full text-center uppercase ">         
                 Add <span className='text-[orangered]'>Streams</span> start <span className='text-[orangered]'>Streaming</span>
               </CardItem>
               <CardItem 
@@ -377,7 +380,8 @@ export default function StreamsView({streamerName,playVideo=false}:{streamerName
             
             
           }
-          </div>        }
+          </div> 
+          }
       </div>
   )
 }

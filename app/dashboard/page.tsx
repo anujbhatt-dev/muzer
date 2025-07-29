@@ -4,7 +4,6 @@ import { useAuth } from "@clerk/nextjs";
 import { toast } from 'sonner';
 import { Share2 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-// import {io, Socket} from "socket.io-client"
 
 
 
@@ -12,7 +11,6 @@ import { useEffect, useRef, useState } from "react";
 export default function Dashboard() {
   const { userId } = useAuth();
   const [username,setUsename] = useState("")
-  // const socketRef = useRef<Socket | null>(null);
 
   const handleCopy = () => {
     if (!userId) return;
@@ -52,25 +50,6 @@ export default function Dashboard() {
         }
     }
     fetchUserName();
-    
-    //  // Setup socket connection
-    //  const socket = io("http://localhost:4000", {
-    //   query: { userId }, // optional if you need to send userId
-    // });
-    // socketRef.current = socket;
-
-    // socket.on("connect", () => {
-    //   console.log("Connected with socket ID:", socket.id);
-    // });
-
-    // socket.on("disconnect", () => {
-    //   console.log("Socket disconnected");
-    // });
-
-    // // Cleanup
-    // return () => {
-    //   socket.disconnect();
-    // };
 
   },[])
 
