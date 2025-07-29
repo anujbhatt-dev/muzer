@@ -14,8 +14,12 @@ const nextConfig: NextConfig = {
       {
         protocol:"http",
         hostname:"img.youtube.com",
-
+      },
+      {
+        protocol:"https",
+        hostname:"fastly.picsum.photos"
       }
+
     ],
   },
   eslint: {

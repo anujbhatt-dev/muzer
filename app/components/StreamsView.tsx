@@ -9,6 +9,9 @@ import YouTube from 'react-youtube';
 import { IconArrowNarrowRightDashed, IconArrowRampRight } from '@tabler/icons-react';
 import { AnimatedTooltip } from './animated-tooltip';
 import Image from 'next/image';
+import { CardBody, CardContainer, CardItem } from '@/components/ui/3d-card';
+import Dither from './ui/Dither/Dither';
+import { BackgroundGradient } from './ui/background-gradient';
 
 interface YouTubeVideo {
     id: string;
@@ -113,6 +116,10 @@ export default function StreamsView({streamerName,playVideo=false}:{streamerName
     streamInterval = setInterval(fetchStreams, 5000);
   
     // Cleanup on unmount
+
+
+    console.log("thumbnail  "+thumbnail)
+
     return () => clearInterval(streamInterval);
   }, [streamerName, userId]);
   
@@ -156,7 +163,8 @@ export default function StreamsView({streamerName,playVideo=false}:{streamerName
           value={songInput}
           onChange={(e) => setSongInput(e.target.value)}
           />
-        {thumbnail && (
+        {thumbnail && !thumbnail.includes("null") &&
+          (
           <Image
             width={1080}
             height={916}
@@ -166,13 +174,13 @@ export default function StreamsView({streamerName,playVideo=false}:{streamerName
           />
         )}
       
-      <button onClick={handleSubmit} className="absolute right-4 flex top-[50%] -translate-y-[50%] ">
+      <button onClick={handleSubmit} className="absolute right-4 flex top-[50%] -translate-y-[50%] cursor-pointer">
           <IconArrowNarrowRightDashed className='w-10 h-10'/>
       </button>
 
     </div>
 
-    {currentStream || streams && streams?.length>0 ?
+    {(currentStream || streams && streams?.length>0)  ?
     <div className='flex flex-col-reverse lg:flex-row-reverse justify-between gap-x-4 gap-y-2'>
         {(streams && streams.length) ? 
         <div className='min-h-full  flex-1 '>
@@ -182,7 +190,7 @@ export default function StreamsView({streamerName,playVideo=false}:{streamerName
                 </div>
                 <AnimatePresence>
                 {streams.map((stream, i) => (
-                  <>
+                  <div key={stream.id+i} >
                   <motion.div  
                   layout 
                   initial={{ opacity: 0, y: 20, scale: 0.95 }}
@@ -193,7 +201,7 @@ export default function StreamsView({streamerName,playVideo=false}:{streamerName
                     ease: [0.25, 0.46, 0.45, 0.94],
                     delay: i * 0.05,
                   }}
-                  key={stream.id+i} 
+                  
                   className='flex flex-wrap md:flex-row gap-x-2  gap-y-4 md:items-center justify-between bg-zinc-900/80 p-2 lg:p-4 border border-zinc-400/20 shadow-md shadow-purple-900/10 rounded-lg'>
                     <div className=''>
                         <img width={150} height={100} alt={stream.title} src={stream.bigImage} className='object-cover w-[6rem] rounded-md'/>
@@ -206,31 +214,50 @@ export default function StreamsView({streamerName,playVideo=false}:{streamerName
                         <ThumbsUp className='w-4 h-4 ' fill={stream.hasUpvoted?"white":"transparent"}/>                        
                     </div>
                   </motion.div>                  
-                    {i==0 && <div className='text-sm uppercase mt-8 md:mt-0 text-zinc-500'>         
+                    {streams.length>1 && i==0 && <div className='text-sm uppercase mt-8 text-zinc-500'>         
                       Upcoming Song
                     </div>}
-                    </>
+                    </div>
                 ))}
                 </AnimatePresence>  
               </div>
         </div>:
-        <div className='flex items-center justify-center flex-1  flex-col '>
-              <div className='text-2xl mb-8 font-bold self-start'>         
-                Upcoming Song
-              </div>  
-              <div className='flex items-center justify-center bg-zinc-900/80 p-4 border border-zinc-400/20 shadow-md shadow-purple-900/10 rounded-lg flex-1 w-full'>
-                <p className='text-3xl font-bold tracking-wide'>
-                    No <span className='text-[orangered] '>Songs</span> in the Queue
-                </p>
-              </div>
+        <div  className='flex items-stretch flex-1 relative rounded-2xl overflow-hidden min-h-[60%]'>      
+              <Dither
+                waveColor={[0.5, 0.5, 0.5]}
+                disableAnimation={false}
+                enableMouseInteraction={true}
+                mouseRadius={0.3}
+                colorNum={4}
+                waveAmplitude={0.3}
+                waveFrequency={3}
+                waveSpeed={0.05}                
+              />        
+              {/* <div className='flex items-center justify-center bg-zinc-900/80 p-4 border border-zinc-400/20 shadow-md shadow-purple-900/10 rounded-lg flex-1 w-full'> */}
+              <CardContainer  className="inter-var h-full w-full flex-1" containerClassName='flex-1  absolute -translate-x-[50%] left-[50%]'>
+              <BackgroundGradient>
+                <CardBody
+                  className="relative group/card  dark:hover:shadow-2xl dark:hover:shadow-emerald-500/[0.1]  backdrop-blur-sm bg-black/80 dark:border-white/[0.2] border-black/[0.1] rounded-xl p-6 border flex flex-col justify-center items-center w-auto ">
+                  <CardItem 
+                    translateZ="50"
+                    className="text-lg font-bold text-zinc-300 w-full text-center uppercase ">         
+                    Add More <span className='text-[orangered]'>Songs</span> in the queue
+                  </CardItem>
+                  
+                </CardBody>
+              </BackgroundGradient>
+              </CardContainer>
+              {/* </div> */}
         </div>
           }
-        <div className="flex-1 flex flex-col gap-y-8 bg-black/30 backdrop-blur-3xl p-1 rounded-lg">
+        <div className="flex-1 flex flex-col gap-y-8 bg-black/30 backdrop-blur-3xl p-1 rounded-2xl">
           {/* current stream */}
           <div className=''>           
           <div>
           <div className='rounded-[10px] overflow-hidden mb-4'>
           {currentStream?.extractedId && (
+            <BackgroundGradient>
+
             <YouTube 
               videoId={currentStream?.extractedId} 
               onEnd={playNext}  
@@ -240,7 +267,7 @@ export default function StreamsView({streamerName,playVideo=false}:{streamerName
                 playerRef.current.playVideo();
               }}
               opts={{
-              width:"100%",
+                width:"100%",
               height:"500px",
               playerVars: {              
               // https://developers.google.com/youtube/player_parameters
@@ -248,7 +275,8 @@ export default function StreamsView({streamerName,playVideo=false}:{streamerName
               mute: 0,
               modestbranding: 1,
               controls: 1,
-            }}} className='mx-auto' />
+            }}} className='mx-auto rounded-lg overflow-hidden ' />
+            </BackgroundGradient>
           )}
           </div>
           
@@ -281,37 +309,72 @@ export default function StreamsView({streamerName,playVideo=false}:{streamerName
     :
           <div className='flex justify-center items-center relative h-[60vh] overflow-hidden rounded-2xl mx-auto'>                        
             {streamsLoading?
-            <h4 className='absolute uppercase font-bold text-7xl text-center tracking-wide leading-25'>
-              <span className='text-[orangered]'>Streams</span> Loading...
-            </h4>
+            <CardContainer  className="inter-var">
+            <BackgroundGradient>
+              <CardBody
+                className="bg-gray-50 relative group/card  dark:hover:shadow-2xl dark:hover:shadow-emerald-500/[0.1] dark:bg-black/50 dark:border-white/[0.2] border-black/[0.1] h-[15rem] rounded-xl p-6 border flex flex-col justify-center items-center w-auto lg:w-[55rem]">
+                <CardItem 
+                  translateZ="50"
+                  className="text-lg font-bold text-zinc-700 w-full text-center uppercase ">         
+                  <span className='text-[orangered]'>Streams</span> Loading
+                </CardItem>            
+              </CardBody>
+            </BackgroundGradient>  
+          </CardContainer>
 
+            : !thumbnail?.includes("null") ?
+            <CardContainer  className="inter-var">
+              <BackgroundGradient>
+                <CardBody
+                  className="bg-gray-50 relative group/card  dark:hover:shadow-2xl dark:hover:shadow-emerald-500/[0.1] dark:bg-black/50 dark:border-white/[0.2] border-black/[0.1] w-auto sm:w-[30rem] h-auto rounded-xl p-6 border">
+                  <CardItem 
+                    translateZ="50"
+                    className="text-sm font-bold text-zinc-700 w-full text-right uppercase ">         
+                    Start <span className='text-[orangered]'>Streaming</span>
+                  </CardItem>   
+                  {thumbnail && thumbnail!="" && !thumbnail.includes("null") &&
+                  <CardItem 
+                    translateZ="100"
+                    rotateX={20}
+                    rotateZ={10}
+                    className="w-full mt-4">
+                      <Image width={1080} height={916} className="rounded-xl mb-4 w-full h-full" src={thumbnail ?? "https://fastly.picsum.photos/id/237/200/300.jpg?hmac=TmmQSbShHz9CdQm0NkEjx1Dyh_Y984R9LpNrpvH2D_U"} alt="" />            
+                  </CardItem>
+                  }
+                  <CardItem 
+                    translateZ={20}
+                    translateX={40}
+                    as="button"
+                    className="p-2 rounded-xl bg-zinc-950  text-white text-lg font-bold flex gap-x-2 items-center justify-center hover:bg-amber-200 hover:text-black cursor-pointer"
+                    onClick={handleSubmit}>          
+                      <div
+                        className="text-sm font-bold w-full text-right uppercase ">         
+                        Play <span className='text-[orangered]'>Next</span>
+                      </div>       
+                      <IconArrowNarrowRightDashed className='w-8 h-8'/>
+                  </CardItem>
+                </CardBody>
+              </BackgroundGradient>
+            </CardContainer>
             :
-            <div className='uppercase font-bold text-7xl text-center tracking-wide leading-25'>
-              
-              <div className='text-2xl mb-8 font-bold'>         
-                Start <span className='text-[orangered]'>Streaming</span>
-              </div>   
-              <div className="flex flex-col items-center">
-                <input
-                  placeholder="ADD YOUR SONG HERE"
-                  className="border rounded-lg border-zinc-600/80 mb-4 h-12 bg-zinc-950 text-center p-2 text-sm w-[80vw]"
-                  type="text"
-                  value={songInput}
-                  onChange={(e) => setSongInput(e.target.value)}
-                  />
-                {thumbnail!=""  
-                  &&
-                  <img className="rounded-xl mb-4 " src={thumbnail ?? "https://fastly.picsum.photos/id/237/200/300.jpg?hmac=TmmQSbShHz9CdQm0NkEjx1Dyh_Y984R9LpNrpvH2D_U"} alt="" />            
-                }
-                <button onClick={handleSubmit} className="w-[20rem] text-lg bg-purple-900 hover:bg-purple-800 cursor-pointer px-10 py-2 gap-4 rounded-lg shadow-xl active:shadow-md active:shadow-purple-500/50 hover:shadow-purple-500/10  max-w-sm mx-auto transition-all duration-150 text-center flex justify-center">
-                    <FileStack/>
-                    Add to Queue
-                </button>
-              </div>
-              <h4 className='uppercase font-bold text-xl text-center tracking-wide leading-25 mt-10'>
-                No <span className='text-[orangered]'>Stream</span> added yet
-              </h4>
-            </div>
+            <CardContainer  className="inter-var">
+            <CardBody
+               className="bg-gray-50 relative group/card  dark:hover:shadow-2xl dark:hover:shadow-emerald-500/[0.1] dark:bg-black/50 dark:border-white/[0.2] border-black/[0.1] h-[15rem] rounded-xl p-6 border flex flex-col justify-center items-center w-auto lg:w-[55rem]">
+              <CardItem 
+                translateZ="50"
+                className="text-lg font-bold text-zinc-700 w-full text-center uppercase ">         
+                Add <span className='text-[orangered]'>Streams</span> start <span className='text-[orangered]'>Streaming</span>
+              </CardItem>
+              <CardItem 
+                translateZ="50"
+                className="text-sm font-bold text-zinc-200 w-full text-center mt-4">         
+                  <p >
+                    No need to watch alone just join your favorite streams
+                  </p>
+              </CardItem>                 
+            </CardBody>
+          </CardContainer>
+            
             
           }
           </div>        }
