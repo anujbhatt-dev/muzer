@@ -75,6 +75,8 @@ export default function StreamsView({streamerName,playVideo=false}:{streamerName
     let streamInterval: NodeJS.Timeout;
   
     const fetchStreams = async () => {
+      if (document.visibilityState !== "visible") return;
+      
       try {
         const res = await fetch("/api/streams", {
           method: "POST",
@@ -174,7 +176,7 @@ export default function StreamsView({streamerName,playVideo=false}:{streamerName
           <Image
             width={1080}
             height={916}
-            className="rounded-full h-3/4 w-auto aspect-square absolute left-2 animate-spin top-[50%] -translate-y-[50%]"
+            className="rounded-full h-3/4 w-auto aspect-square absolute left-2 animate-spin top-[50%] -translate-y-[50%] object-cover"
             src={thumbnail}
             alt=""
           />
@@ -210,7 +212,7 @@ export default function StreamsView({streamerName,playVideo=false}:{streamerName
                   
                   className='flex flex-wrap md:flex-row gap-x-2  gap-y-4 md:items-center justify-between bg-zinc-900/80 p-2 lg:p-4 border border-zinc-400/20 shadow-md shadow-purple-900/10 rounded-lg'>
                     <div className=''>
-                        <img width={150} height={100} alt={stream.title} src={stream.bigImage} className='object-cover w-[6rem] rounded-md'/>
+                        <img width={150} height={100} alt={stream.title} src={stream.bigImage} className='object-cover w-[6rem] rounded-md object-cover'/>
                     </div>
                     <div className='flex-1 self-start'>
                       <p className='text-zinc-300 text-sm md:text-md '>{stream.title.substring(0,75)}</p>
@@ -268,7 +270,7 @@ export default function StreamsView({streamerName,playVideo=false}:{streamerName
             <YouTube 
               videoId={currentStream?.extractedId} 
               title={currentStream?.title} 
-              iframeClassName='h-[200px] lg:h-[500px] w-full'
+              iframeClassName='h-[200px] md:h-[350px] lg:h-[500px] w-full'
               onEnd={playNext}  
               loading="eager"
               onReady={(e)=>{

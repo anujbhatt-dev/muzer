@@ -27,11 +27,16 @@ export async function POST(request:NextRequest){
             creatorId:data.creatorId,
             played:false
         },
-        orderBy:{
-            upvotes:{
-                _count:"desc"
-            }
-        }
+        orderBy: [
+            {
+              upvotes: {
+                _count: 'desc',
+              },
+            },
+            {
+              createdAt: 'asc', // older streams come first if upvotes are equal
+            },
+          ],
     });
     if(!mostUpvotedStream){
         return NextResponse.json({
