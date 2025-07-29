@@ -24,7 +24,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Extract video ID    
+    // Extract video ID
     const extractedId = extractYoutubeId(data.url);
 
     if (!extractedId) {
@@ -40,12 +40,13 @@ export async function POST(request: NextRequest) {
     if (
       !videoDetails ||
       typeof videoDetails !== "object" ||
-      !videoDetails.title 
+      !videoDetails.title
     ) {
       return NextResponse.json(
         {
           success: false,
           message: "Invalid or unavailable video. Thumbnail data missing.",
+          debug: { extractedId, videoDetails },
         },
         { status: 400 }
       );
@@ -53,19 +54,31 @@ export async function POST(request: NextRequest) {
 
     const { title, thumbnail } = videoDetails;
 
-    if (!Array.isArray(thumbnail?.thumbnails) || thumbnail.thumbnails.length === 0) {
+    // Check if thumbnails exist and have at least one entry
+    const thumbnails = Array.isArray(thumbnail?.thumbnails)
+      ? thumbnail.thumbnails
+      : [];
+
+    if (thumbnails.length === 0) {
       return NextResponse.json(
         {
           success: false,
           message: "Thumbnail data missing or in unexpected format.",
+          debug: {
+            extractedId,
+            thumbnail,
+            videoDetails,
+          },
         },
         { status: 400 }
       );
     }
 
-    const thumbnails = thumbnail.thumbnails;
-
-    thumbnails.sort((a: { width?: number }, b: { width?: number }) => (b?.width ?? 0) - (a?.width ?? 0));
+    // Sort thumbnails by width descending
+    thumbnails.sort(
+      (a: { width?: number }, b: { width?: number }) =>
+        (b?.width ?? 0) - (a?.width ?? 0)
+    );
 
     // Get user by username
     const user = await prismaClient.user.findUnique({
@@ -104,8 +117,12 @@ export async function POST(request: NextRequest) {
         extractedId,
         type: "Youtube",
         title,
-        smallImg: thumbnails[1]?.url || "https://fastly.picsum.photos/id/237/200/300.jpg?hmac=TmmQSbShHz9CdQm0NkEjx1Dyh_Y984R9LpNrpvH2D_U",
-        bigImage: thumbnails[0]?.url || "https://fastly.picsum.photos/id/237/200/300.jpg?hmac=TmmQSbShHz9CdQm0NkEjx1Dyh_Y984R9LpNrpvH2D_U",
+        smallImg:
+          thumbnails[1]?.url ||
+          "https://fastly.picsum.photos/id/237/200/300.jpg?hmac=TmmQSbShHz9CdQm0NkEjx1Dyh_Y984R9LpNrpvH2D_U",
+        bigImage:
+          thumbnails[0]?.url ||
+          "https://fastly.picsum.photos/id/237/200/300.jpg?hmac=TmmQSbShHz9CdQm0NkEjx1Dyh_Y984R9LpNrpvH2D_U",
       },
     });
 
@@ -122,7 +139,7 @@ export async function POST(request: NextRequest) {
 
     if (error instanceof z.ZodError) {
       return NextResponse.json(
-        { success: false, message: "Validation failed", issues: error },
+        { success: false, message: "Validation failed", issues: error},
         { status: 400 }
       );
     }
