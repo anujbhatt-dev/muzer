@@ -26,7 +26,6 @@ export async function POST(request: NextRequest) {
 
     // Extract video ID
     const extractedId = extractYoutubeId(data.url);
-
     if (!extractedId) {
       return NextResponse.json(
         { success: false, message: "Unable to extract video ID from URL" },
@@ -34,16 +33,23 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Get video details using youtube-search-api
-    let videoDetails = await youtubesearchapi.GetVideoDetails(extractedId);
+    // Initialize videoDetails
+    let videoDetails: { title?: string; thumbnail?: any } = {};
 
-    // Check if thumbnail info is missing or invalid
+    // Try primary method
+    try {
+      videoDetails = await youtubesearchapi.GetVideoDetails(extractedId);
+    } catch (apiErr) {
+      console.warn("youtube-search-api failed", apiErr);
+    }
+
+    // Extract thumbnails if available
     let thumbnails = Array.isArray(videoDetails?.thumbnail?.thumbnails)
       ? videoDetails.thumbnail.thumbnails
       : [];
 
-    // Fallback to YouTube oEmbed API if thumbnails missing
-    if (thumbnails.length === 0) {
+    // Fallback: use oEmbed API if thumbnails are missing or title is undefined
+    if (thumbnails.length === 0 || !videoDetails.title) {
       try {
         const oembedRes = await fetch(
           `https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${extractedId}&format=json`
@@ -63,8 +69,10 @@ export async function POST(request: NextRequest) {
 
         const oembed = await oembedRes.json();
 
-        // Override title and thumbnails from oEmbed response
-        videoDetails.title = oembed.title;
+        videoDetails = {
+          title: oembed.title,
+        };
+
         thumbnails = [
           {
             url: oembed.thumbnail_url,
@@ -84,7 +92,7 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Validate title presence after fallback
+    // Final check for title
     if (!videoDetails.title) {
       return NextResponse.json(
         {
@@ -115,7 +123,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Check if stream already exists for this user
+    // Check for existing unplayed stream with same video ID
     const existingStream = await prismaClient.stream.findFirst({
       where: {
         creatorId: user.id,
@@ -131,7 +139,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Create stream
+    // Create new stream
     const stream = await prismaClient.stream.create({
       data: {
         creatorId: user.id,
