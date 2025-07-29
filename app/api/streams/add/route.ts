@@ -34,41 +34,63 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Get video details
-    const videoDetails = await youtubesearchapi.GetVideoDetails(extractedId);
+    // Get video details using youtube-search-api
+    let videoDetails = await youtubesearchapi.GetVideoDetails(extractedId);
 
-    if (
-      !videoDetails ||
-      typeof videoDetails !== "object" ||
-      !videoDetails.title
-    ) {
-      return NextResponse.json(
-        {
-          success: false,
-          message: "Invalid or unavailable video. Thumbnail data missing.",
-          debug: { extractedId, videoDetails },
-        },
-        { status: 400 }
-      );
-    }
-
-    const { title, thumbnail } = videoDetails;
-
-    // Check if thumbnails exist and have at least one entry
-    const thumbnails = Array.isArray(thumbnail?.thumbnails)
-      ? thumbnail.thumbnails
+    // Check if thumbnail info is missing or invalid
+    let thumbnails = Array.isArray(videoDetails?.thumbnail?.thumbnails)
+      ? videoDetails.thumbnail.thumbnails
       : [];
 
+    // Fallback to YouTube oEmbed API if thumbnails missing
     if (thumbnails.length === 0) {
+      try {
+        const oembedRes = await fetch(
+          `https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${extractedId}&format=json`
+        );
+
+        if (!oembedRes.ok) {
+          return NextResponse.json(
+            {
+              success: false,
+              message:
+                "Failed to fetch video data from YouTube oEmbed API fallback",
+              debug: { extractedId, videoDetails },
+            },
+            { status: 400 }
+          );
+        }
+
+        const oembed = await oembedRes.json();
+
+        // Override title and thumbnails from oEmbed response
+        videoDetails.title = oembed.title;
+        thumbnails = [
+          {
+            url: oembed.thumbnail_url,
+            width: 480,
+          },
+        ];
+      } catch (oembedError) {
+        return NextResponse.json(
+          {
+            success: false,
+            message:
+              "Failed to fetch video data from YouTube oEmbed API fallback",
+            debug: { extractedId, videoDetails, oembedError },
+          },
+          { status: 400 }
+        );
+      }
+    }
+
+    // Validate title presence after fallback
+    if (!videoDetails.title) {
       return NextResponse.json(
         {
           success: false,
-          message: "Thumbnail data missing or in unexpected format.",
-          debug: {
-            extractedId,
-            thumbnail,
-            videoDetails,
-          },
+          message: "Invalid or unavailable video. Title missing.",
+          debug: { extractedId, videoDetails },
         },
         { status: 400 }
       );
@@ -116,7 +138,7 @@ export async function POST(request: NextRequest) {
         url: data.url,
         extractedId,
         type: "Youtube",
-        title,
+        title: videoDetails.title,
         smallImg:
           thumbnails[1]?.url ||
           "https://fastly.picsum.photos/id/237/200/300.jpg?hmac=TmmQSbShHz9CdQm0NkEjx1Dyh_Y984R9LpNrpvH2D_U",
@@ -139,12 +161,10 @@ export async function POST(request: NextRequest) {
 
     if (error instanceof z.ZodError) {
       return NextResponse.json(
-        { success: false, message: "Validation failed", issues: error},
+        { success: false, message: "Validation failed", issues: error },
         { status: 400 }
       );
     }
-
-    
 
     return NextResponse.json(
       { success: false, message: "Internal server error" },
