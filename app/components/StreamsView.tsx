@@ -115,7 +115,7 @@ export default function StreamsView({streamerName,playVideo=false}:{streamerName
     // Initial call
     fetchStreams();
     // Poll every 5 seconds
-    streamInterval = setInterval(fetchStreams, 500000);
+    streamInterval = setInterval(fetchStreams, 5000);
   
     // Cleanup on unmount
 
