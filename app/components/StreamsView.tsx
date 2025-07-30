@@ -1,6 +1,6 @@
 "use client"
 import React, { useEffect, useRef, useState } from 'react'
-import { useAuth } from '@clerk/nextjs';
+import { useAuth, useUser } from '@clerk/nextjs';
 import { ThumbsUp } from 'lucide-react';
 //@ts-ignore
 import youtubeThumbnail from "youtube-thumbnail"
@@ -12,6 +12,7 @@ import Image from 'next/image';
 import { CardBody, CardContainer, CardItem } from '@/components/ui/3d-card';
 import Dither from './ui/Dither/Dither';
 import { BackgroundGradient } from './ui/background-gradient';
+import { io, Socket } from "socket.io-client";
 
 interface YouTubeVideo {
     id: string;
@@ -25,7 +26,13 @@ interface YouTubeVideo {
     extractedId: string;
     upvotes:number
     hasUpvoted: boolean
-  }
+}
+
+interface OnlineUserSchema {
+  socketId: string;
+  fullName: string;
+  imageUrl: string;
+}
 
   
 
@@ -41,8 +48,10 @@ export default function StreamsView({streamerName,playVideo=false}:{streamerName
   const playerRef = useRef<any>(null);
   const [seekTime,setSeekTime] = useState<number>(0);
   const [nextLoading,setNextLoading] = useState(false);
-  const [username,setUsename] = useState("")
-  
+  const [username,setUsename] = useState("");
+  const [onlineUsers,setOnlineUsers] = useState<OnlineUserSchema[] | null>(null)
+  const socketRef = useRef<Socket | null>(null)
+  const { user } = useUser();
 
 
 
@@ -72,6 +81,8 @@ export default function StreamsView({streamerName,playVideo=false}:{streamerName
 
   useEffect(() => {
     if (!streamerName) return;
+
+    
   
     let streamInterval: NodeJS.Timeout;
 
@@ -84,11 +95,26 @@ export default function StreamsView({streamerName,playVideo=false}:{streamerName
       })
       const data = await res.json()
       setUsename(data.username)
-      console.log("username fetched", data.username, streamerName);
-      
+      console.log("username fetched", data.username, streamerName);      
+      const socket = io("http://localhost:4000", {
+        query: { 
+          creatorUsername:streamerName,
+          creatorId:"",
+          joineeId:userId,
+          fullname:user?.firstName || "Guest user",
+          imageUrl:user?.imageUrl
+         },
+      });  
+      socketRef.current = socket
+      socket.on('joined_room',(res)=>{
+          console.log(`streamers `, (res.onlineUsers));      
+          setOnlineUsers(res.onlineUsers)    
+      })
     }
-    fetchUserName()
+    fetchUserName();
   
+    
+
     const fetchStreams = async () => {
       if (document.visibilityState !== "visible") return;
       
@@ -321,6 +347,20 @@ export default function StreamsView({streamerName,playVideo=false}:{streamerName
                     <AnimatedTooltip items={[{id:1,name:"Next Stream",designation:streams && streams?.[0]?.title || "" ,image:streams && streams?.[0]?.smallImg || ""}]}/>
                   </div>
               }
+            </div>
+          }
+
+          {/* online users */}
+          {onlineUsers &&
+            <div>
+                <div className='text-zinc-500 text-sm uppercase'>
+                  Online users
+                </div>
+                {onlineUsers.map((onlineuser,i)=>(
+                   <div key={i}>
+                      {JSON.stringify(onlineuser)}
+                   </div>
+                ))}
             </div>
           }
           </div>
