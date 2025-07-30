@@ -41,6 +41,7 @@ export default function StreamsView({streamerName,playVideo=false}:{streamerName
   const playerRef = useRef<any>(null);
   const [seekTime,setSeekTime] = useState<number>(0);
   const [nextLoading,setNextLoading] = useState(false);
+  const [username,setUsename] = useState("")
   
 
 
@@ -73,6 +74,20 @@ export default function StreamsView({streamerName,playVideo=false}:{streamerName
     if (!streamerName) return;
   
     let streamInterval: NodeJS.Timeout;
+
+    const fetchUserName = async () => {
+      const res = await fetch("/api/me",{
+        method:"POST",
+        body:JSON.stringify({
+          id:userId
+        })
+      })
+      const data = await res.json()
+      setUsename(data.username)
+      console.log("username fetched", data.username, streamerName);
+      
+    }
+    fetchUserName()
   
     const fetchStreams = async () => {
       if (document.visibilityState !== "visible") return;
@@ -129,6 +144,7 @@ export default function StreamsView({streamerName,playVideo=false}:{streamerName
 
   const playNext = async () =>{
     if (nextLoading) return;
+    if(streamerName!=username) return;
     try {
       setNextLoading(true)
       await fetch(`/api/streams/next`,{
@@ -212,10 +228,10 @@ export default function StreamsView({streamerName,playVideo=false}:{streamerName
                   
                   className='flex flex-wrap md:flex-row gap-x-2  gap-y-4 md:items-center justify-between bg-zinc-900/80 p-2 lg:p-4 border border-zinc-400/20 shadow-md shadow-purple-900/10 rounded-lg'>
                     <div className=''>
-                        <img width={150} height={100} alt={stream.title} src={stream.bigImage} className='object-cover w-[6rem] rounded-md object-cover'/>
+                        <Image width={150} height={100} alt={stream.title} src={stream.bigImage} className='w-[6rem] h-auto rounded-md object-cover'/>
                     </div>
                     <div className='flex-1 self-start'>
-                      <p className='text-zinc-300 text-sm md:text-md '>{stream.title.substring(0,75)}</p>
+                      <p className='text-zinc-300 text-sm md:text-md '>{stream.title}</p>
                       <p className='text-white '><span className='text-zinc-500 text-sm'>votes:</span> <span>{stream.upvotes}</span></p>
                     </div>
                     <div onClick={()=>handleVote(stream.id,i, stream.hasUpvoted?"downvote":"upvote")} className='bg-zinc-800 hover:bg-purple-800 cursor-pointer px-3 py-3 flex items-center self-start gap-4 rounded-lg shadow-xl active:shadow-md active:shadow-purple-500/50 hover:shadow-purple-500/10  max-w-sm mx-auto transition-all duration-150 md:mx-4'>
@@ -244,7 +260,7 @@ export default function StreamsView({streamerName,playVideo=false}:{streamerName
               <CardContainer  className="inter-var h-full w-full flex-1" containerClassName='flex-1  absolute -translate-x-[50%] left-[50%]'>
               <BackgroundGradient>
                 <CardBody
-                  className="relative group/card  dark:hover:shadow-2xl dark:hover:shadow-emerald-500/[0.1]  backdrop-blur-sm bg-black/80 dark:border-white/[0.2] border-black/[0.1] rounded-xl p-6 border flex flex-col justify-center items-center w-auto ">
+                  className="relative group/card  hover:shadow-2xl hover:shadow-emerald-500/[0.1]  backdrop-blur-sm bg-black/80 border-white/[0.2] rounded-xl p-6 border flex flex-col justify-center items-center w-auto ">
                   <CardItem 
                     translateZ="50"
                     translatex="-10"
@@ -319,7 +335,7 @@ export default function StreamsView({streamerName,playVideo=false}:{streamerName
             <CardContainer  className="inter-var">
             <BackgroundGradient>
               <CardBody
-                className="bg-gray-50 relative group/card  dark:hover:shadow-2xl dark:hover:shadow-emerald-500/[0.1] dark:bg-black/50 dark:border-white/[0.2] border-black/[0.1] h-[15rem] rounded-xl p-6 border flex flex-col justify-center items-center w-auto lg:w-[55rem]">
+                className="relative group/card  hover:shadow-2xl hover:shadow-emerald-500/[0.1] bg-black/50 border-white/[0.2] h-[15rem] rounded-xl p-6 border flex flex-col justify-center items-center w-auto lg:w-[55rem]">
                 <CardItem 
                   translateZ="50"
                   className="text-lg font-bold text-zinc-200 w-full text-center uppercase ">         
@@ -333,7 +349,7 @@ export default function StreamsView({streamerName,playVideo=false}:{streamerName
             <CardContainer  className="inter-var">
               <BackgroundGradient>
                 <CardBody
-                  className="bg-gray-50 relative group/card  dark:hover:shadow-2xl dark:hover:shadow-emerald-500/[0.1] dark:bg-black/50 dark:border-white/[0.2] border-black/[0.1] w-auto sm:w-[30rem] h-auto rounded-xl p-6 border">
+                  className="relative group/card  hover:shadow-2xl hover:shadow-emerald-500/[0.1] bg-black/50 border-white/[0.2] w-auto sm:w-[30rem] h-auto rounded-xl p-6 border">
                   <CardItem 
                     translateZ="50"
                     className="text-sm font-bold text-zinc-200 w-full text-right uppercase ">         
@@ -366,7 +382,7 @@ export default function StreamsView({streamerName,playVideo=false}:{streamerName
             :
             <CardContainer  className="inter-var">
             <CardBody
-               className="bg-gray-50 relative group/card  dark:hover:shadow-2xl dark:hover:shadow-emerald-500/[0.1] dark:bg-black/50 dark:border-white/[0.2] border-black/[0.1] h-[15rem] rounded-xl p-6 border flex flex-col justify-center items-center w-auto lg:w-[55rem]">
+               className="relative group/card  hover:shadow-2xl hover:shadow-emerald-500/[0.1] bg-black/50 border-white/[0.2] h-[15rem] rounded-xl p-6 border flex flex-col justify-center items-center w-auto lg:w-[55rem]">
               <CardItem 
                 translateZ="50"
                 className="text-lg font-bold text-zinc-200 w-full text-center uppercase ">         

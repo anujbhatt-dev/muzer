@@ -4,7 +4,7 @@ import SplitText from './ui/SplitText/SplitText'
 import StreamsView from './StreamsView'
 
 export default function CreatorView({creatorName}:{creatorName:string}) {
-  console.log("CreatorView ",creatorName);
+  console.log("CreatorView ", creatorName);
   
   return (
     <div>

@@ -12,28 +12,6 @@ export default function Dashboard() {
   const { userId } = useAuth();
   const [username,setUsename] = useState("")
 
-  const handleCopy = () => {
-    if (!userId) return;
-
-    const baseUrl = process.env.NEXT_PUBLIC_URL || "http://localhost:3000";
-    const link = `${baseUrl}/creator/${username}`;
-
-    navigator.clipboard.writeText(link)
-      .then(() => {
-        toast.success("Link copied!",{
-          style:{
-            color:"green",
-            background:"rgba(0,0,0,1)",
-            border:"1px solid green"
-          }
-        })
-      })      
-      .catch((err) => {
-        console.error("Failed to copy: ", err);
-      });
-  };
-
-
   useEffect(()=>{
     const fetchUserName = async () =>{
         try {
@@ -45,6 +23,8 @@ export default function Dashboard() {
           })
           const data = await res.json()
           setUsename(data.username)
+          console.log("Dashboard ",data.username);
+          
         } catch (error) {
           console.log("error fetching username dashboard "+error);          
         }

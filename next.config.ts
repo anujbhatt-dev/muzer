@@ -6,10 +6,7 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       {
         protocol: 'https',
-        hostname: 'i.ytimg.com',
-        port: '',
-        pathname: '**',
-        search: '',
+        hostname: 'i.ytimg.com'
       },
       {
         protocol:"http",
@@ -19,7 +16,6 @@ const nextConfig: NextConfig = {
         protocol:"https",
         hostname:"fastly.picsum.photos"
       }
-
     ],
   },
   eslint: {
