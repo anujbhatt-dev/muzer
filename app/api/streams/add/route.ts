@@ -160,7 +160,7 @@ export async function POST(request: NextRequest) {
       {
         success: true,
         message: "Stream added successfully",
-        data: stream,
+        stream,
       },
       { status: 201 }
     );

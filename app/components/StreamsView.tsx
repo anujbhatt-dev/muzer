@@ -1,5 +1,5 @@
 "use client"
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { useAuth, useUser } from '@clerk/nextjs';
 import { ThumbsUp } from 'lucide-react';
 //@ts-ignore
@@ -13,6 +13,7 @@ import { CardBody, CardContainer, CardItem } from '@/components/ui/3d-card';
 import Dither from './ui/Dither/Dither';
 import { BackgroundGradient } from './ui/background-gradient';
 import { io, Socket } from "socket.io-client";
+import { toast } from 'sonner';
 
 interface YouTubeVideo {
     id: string;
@@ -26,6 +27,11 @@ interface YouTubeVideo {
     extractedId: string;
     upvotes:number
     hasUpvoted: boolean
+}
+
+
+interface StreamRoomSchema {
+   [username:string]:OnlineUserSchema
 }
 
 interface OnlineUserSchema {
@@ -48,73 +54,108 @@ export default function StreamsView({streamerName,playVideo=false}:{streamerName
   const playerRef = useRef<any>(null);
   const [seekTime,setSeekTime] = useState<number>(0);
   const [nextLoading,setNextLoading] = useState(false);
-  const [username,setUsename] = useState("");
-  const [onlineUsers,setOnlineUsers] = useState<OnlineUserSchema[] | null>(null)
+  const [username,setUsername] = useState("");
+  const [onlineUsers,setOnlineUsers] = useState<string[] | null>(null)
+  const [streamRoomDetails,setStreamRoomDetails] = useState<StreamRoomSchema | null>(null)
   const socketRef = useRef<Socket | null>(null)
   const { user } = useUser();
+  const socketURL = useMemo(() => process.env.NEXT_PUBLIC_SOCKET_URL || "http://localhost:4000", []);
+
 
 
 
   const handleSubmit = async () => {
     try {
-      await fetch("/api/streams/add",{
+      const res = await fetch("/api/streams/add",{
         method:"POST",
         body:JSON.stringify({
           creatorName:streamerName,
           url:songInput
         })
       })
+      const data =  await res.json()
       setSongInput("")
       setThumbnail("")
-      
+      toast.success("Song added successfully");
+      if(socketRef.current)
+        socketRef.current.emit("add_stream", data.stream)
+
     } catch (error) {
-      
+      console.error("Error during adding stream:", error);
+      toast.error("Error during adding stream");
     }
   }
 
-  useEffect(()=>{
-    setThumbnail(youtubeThumbnail(songInput).medium.url)    
-    console.log(JSON.stringify(youtubeThumbnail(songInput)));
+
+  useEffect(() => {
+    
+    try {
+      const fetchUserName = async () => {
+        const res = await fetch("/api/me",{
+          method:"POST",
+          body:JSON.stringify({
+            id:userId
+          })
+        })
+        console.log("name fetched successfully");
+                
+        const data = await res.json()
+        setUsername(data.username)
+        console.log("username fetched", data.username, streamerName);      
+        const socket = io(socketURL, {
+          query: { 
+            creatorUsername:streamerName,
+            creatorId:"",
+            joineeId:userId,
+            fullname:user?.firstName || "Guest user",
+            imageUrl:user?.imageUrl,
+            joineeUsername:data.username
+           },
+        });  
+        socketRef.current = socket
+        socket.on("connect_error", (err) => console.error("Socket error:", err));
+        socket.on("disconnect", () => console.log("Socket disconnected"));
+        socketRef.current.on('joined_room',(res)=>{             
+            console.log(`streamers called`,res);      
+            setOnlineUsers(res.onlineusers)  
+            setStreamRoomDetails(res.onlineUserFullDetails)  
+            setStreams(res.streams)
+        })
+
+        // socket.on("added_stream",(streams)=>{
+        //   setStreams(streams)
+        // })
         
-  }, [songInput, youtubeThumbnail])
+      }
+      fetchUserName();
+
+
+    } catch (error) {
+      console.log("Error fetching socket", error);
+    }
+  
+    return () => {
+      socketRef.current?.disconnect();
+    };
+  }, [streamerName, userId]);
+  
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      if (songInput.includes("youtube.com") || songInput.includes("youtu.be")) {
+        const thumb = youtubeThumbnail(songInput);
+        setThumbnail(thumb?.medium?.url);
+      }
+    }, 500);
+  
+    return () => clearTimeout(handler);
+  }, [songInput]);
+  
   
 
   useEffect(() => {
     if (!streamerName) return;
-
-    
-  
     let streamInterval: NodeJS.Timeout;
-
-    const fetchUserName = async () => {
-      const res = await fetch("/api/me",{
-        method:"POST",
-        body:JSON.stringify({
-          id:userId
-        })
-      })
-      const data = await res.json()
-      setUsename(data.username)
-      console.log("username fetched", data.username, streamerName);      
-      const socket = io("http://localhost:4000", {
-        query: { 
-          creatorUsername:streamerName,
-          creatorId:"",
-          joineeId:userId,
-          fullname:user?.firstName || "Guest user",
-          imageUrl:user?.imageUrl
-         },
-      });  
-      socketRef.current = socket
-      socket.on('joined_room',(res)=>{
-          console.log(`streamers `, (res.onlineUsers));      
-          setOnlineUsers(res.onlineUsers)    
-      })
-    }
-    fetchUserName();
-  
-    
-
     const fetchStreams = async () => {
       if (document.visibilityState !== "visible") return;
       
@@ -148,6 +189,7 @@ export default function StreamsView({streamerName,playVideo=false}:{streamerName
         }
       } catch (err) {
         console.error("Failed to fetch streams:", err);
+        toast("Failed to fetch streams")
       } finally {
         setStreamsLoading(false);
       }
@@ -178,9 +220,11 @@ export default function StreamsView({streamerName,playVideo=false}:{streamerName
           body:JSON.stringify({              
               creatorId:userId
           })
-      })      
+      })  
+      toast.success("Next Stream Playing");    
     } catch (error) {
-      
+      console.log(error);      
+      toast.error("Error during playing next stream");
     } finally {
       setTimeout(() => {
         setNextLoading(false)        
@@ -315,10 +359,14 @@ export default function StreamsView({streamerName,playVideo=false}:{streamerName
               iframeClassName='h-[200px] md:h-[350px] lg:h-[500px] w-full'
               onEnd={playNext}  
               loading="eager"
-              onReady={(e)=>{
-                playerRef.current = e.target
-                playerRef.current.seekTo(seekTime)
-                playerRef.current.playVideo();
+              onReady={(e) => {
+                const player = e.target;
+                playerRef.current = player;              
+                // Safely check if seekTo exists and seekTime is valid
+                if (typeof player.seekTo === "function" && typeof seekTime === "number") {
+                  player.seekTo(seekTime);
+                }              
+                player.playVideo();
               }}
               opts={{
               playerVars: {              
@@ -351,16 +399,19 @@ export default function StreamsView({streamerName,playVideo=false}:{streamerName
           }
 
           {/* online users */}
-          {onlineUsers &&
-            <div>
-                <div className='text-zinc-500 text-sm uppercase'>
+          {onlineUsers && onlineUsers.length>0 && streamRoomDetails && 
+            <div className='mb-4 ml-2'>
+                <div className='text-zinc-500 text-sm uppercase mb-2 mt-8'>
                   Online users
                 </div>
+                <div className='flex gap-2'>                
                 {onlineUsers.map((onlineuser,i)=>(
-                   <div key={i}>
-                      {JSON.stringify(onlineuser)}
+                   <div className='' key={i}>
+                      {/* {onlineuser} */}
+                      <img title={onlineuser} className='w-[2rem] h-[2rem] rounded-full' src={streamRoomDetails[onlineuser].imageUrl} alt={`Profile picture of ${onlineuser}`}/>                      
                    </div>
                 ))}
+                </div>
             </div>
           }
           </div>
