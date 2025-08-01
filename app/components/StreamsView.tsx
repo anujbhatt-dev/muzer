@@ -317,12 +317,12 @@ export default function StreamsView({streamerName,playVideo=false}:{streamerName
           />
         )}
       
+
       <button disabled={addStreamLoading} onClick={handleSubmit} className="absolute right-4 flex top-[50%] -translate-y-[50%] cursor-pointer">
           {
             !addStreamLoading ?
             <IconArrowNarrowRightDashed className='w-10 h-10'/>:
             <Loader className='w-10 h-10 animate-spin'/>
-
           } 
       </button>
 
