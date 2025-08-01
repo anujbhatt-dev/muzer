@@ -1,7 +1,7 @@
 "use client"
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { useAuth, useUser } from '@clerk/nextjs';
-import { ThumbsUp } from 'lucide-react';
+import { Loader, ThumbsUp } from 'lucide-react';
 //@ts-ignore
 import youtubeThumbnail from "youtube-thumbnail"
 import { AnimatePresence, motion } from "motion/react"
@@ -14,6 +14,7 @@ import Dither from './ui/Dither/Dither';
 import { BackgroundGradient } from './ui/background-gradient';
 import { io, Socket } from "socket.io-client";
 import { toast } from 'sonner';
+import { log } from 'console';
 
 interface YouTubeVideo {
     id: string;
@@ -60,12 +61,14 @@ export default function StreamsView({streamerName,playVideo=false}:{streamerName
   const socketRef = useRef<Socket | null>(null)
   const { user } = useUser();
   const socketURL = useMemo(() => process.env.NEXT_PUBLIC_SOCKET_URL || "http://localhost:4000", []);
+  const [addStreamLoading,setAddStreamLoading] = useState(false)
 
 
 
 
   const handleSubmit = async () => {
     try {
+      setAddStreamLoading(true)
       const res = await fetch("/api/streams/add",{
         method:"POST",
         body:JSON.stringify({
@@ -77,12 +80,15 @@ export default function StreamsView({streamerName,playVideo=false}:{streamerName
       setSongInput("")
       setThumbnail("")
       toast.success("Song added successfully");
+
       if(socketRef.current)
         socketRef.current.emit("add_stream", data.stream)
 
     } catch (error) {
       console.error("Error during adding stream:", error);
       toast.error("Error during adding stream");
+    } finally {
+      setAddStreamLoading(false);
     }
   }
 
@@ -115,22 +121,50 @@ export default function StreamsView({streamerName,playVideo=false}:{streamerName
         socketRef.current = socket
         socket.on("connect_error", (err) => console.error("Socket error:", err));
         socket.on("disconnect", () => console.log("Socket disconnected"));
+        
+        socket.on("get_updated_streams",(streams)=>{
+          console.log("get updated streams", streams);
+          setStreams(streams)
+        })
+
+        socket.on("get_active_stream",(activeStream)=>{
+          console.log("get active stream", activeStream);
+          setCurrentStream(activeStream.stream)
+        })
+
         socketRef.current.on('joined_room',(res)=>{             
             console.log(`streamers called`,res);      
             setOnlineUsers(res.onlineusers)  
             setStreamRoomDetails(res.onlineUserFullDetails)  
             setStreams(res.streams)
+
+            if (res.activeStream?.stream) {
+              const stream = res.activeStream.stream;
+              setCurrentStream(stream);
+      
+              if (stream.playedTs) {
+                const diff = Math.floor(
+                  (new Date().getTime() - new Date(stream.playedTs).getTime()) / 1000
+                );
+                console.log("seek time", diff);
+                setSeekTime(diff + 2);
+              }
+            } else {
+              setCurrentStream(null);
+              setSeekTime(0);
+            }
         })
 
-        // socket.on("added_stream",(streams)=>{
-        //   setStreams(streams)
-        // })
+        socket.on("added_stream",(streams)=>{
+          console.log("added stream", streams);
+          setStreams(streams)
+        })
         
       }
       fetchUserName();
 
 
-    } catch (error) {
+    } catch (error) {  
       console.log("Error fetching socket", error);
     }
   
@@ -196,16 +230,16 @@ export default function StreamsView({streamerName,playVideo=false}:{streamerName
     };
   
     // Initial call
-    fetchStreams();
+    // fetchStreams();
     // Poll every 5 seconds
-    streamInterval = setInterval(fetchStreams, 5000);
+    // streamInterval = setInterval(fetchStreams, 5000);
   
     // Cleanup on unmount
 
 
     console.log("thumbnail  "+thumbnail)
 
-    return () => clearInterval(streamInterval);
+    // return () => clearInterval(streamInterval);
   }, [streamerName, userId]);
   
 
@@ -215,6 +249,8 @@ export default function StreamsView({streamerName,playVideo=false}:{streamerName
     if(streamerName!=username) return;
     try {
       setNextLoading(true)
+      if(socketRef.current)
+      socketRef.current.emit("play_next",null)
       await fetch(`/api/streams/next`,{
           method:"POST",
           body:JSON.stringify({              
@@ -241,6 +277,19 @@ export default function StreamsView({streamerName,playVideo=false}:{streamerName
                 userId
             })
         })
+        if(socketRef.current){
+          if(voteType=="upvote"){
+            socketRef.current.emit("upvote_stream",{
+              streamId:streamId,
+              userId
+            })
+          }else{
+            socketRef.current.emit("downvote_stream",{
+              streamId:streamId,
+              userId
+            })
+          }
+        }
       } catch (error) {
         
       }
@@ -268,8 +317,13 @@ export default function StreamsView({streamerName,playVideo=false}:{streamerName
           />
         )}
       
-      <button onClick={handleSubmit} className="absolute right-4 flex top-[50%] -translate-y-[50%] cursor-pointer">
-          <IconArrowNarrowRightDashed className='w-10 h-10'/>
+      <button disabled={addStreamLoading} onClick={handleSubmit} className="absolute right-4 flex top-[50%] -translate-y-[50%] cursor-pointer">
+          {
+            !addStreamLoading ?
+            <IconArrowNarrowRightDashed className='w-10 h-10'/>:
+            <Loader className='w-10 h-10 animate-spin'/>
+
+          } 
       </button>
 
     </div>
