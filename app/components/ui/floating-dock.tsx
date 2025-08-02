@@ -153,12 +153,12 @@ const FloatingDockDesktop = ({
         className,
       )}
     >
-      <div onClick={handleCopy}>
-        <IconContainer a={false} href={""} mouseX={mouseX} title="Share" icon={<IconShare2/>} />  
-      </div>  
       {items.map((item,idx) => (
         <IconContainer a={true} mouseX={mouseX} key={item.title+idx} {...item} />
       ))}
+      <div onClick={handleCopy}>
+        <IconContainer a={false} href={""} mouseX={mouseX} title="Share" icon={<IconShare2/>} />  
+      </div>  
     </motion.div>
   );
 };

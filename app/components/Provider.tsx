@@ -9,25 +9,16 @@ import LightRays from './ui/LightRays/LightRays'
 
 export default function Provider({children}:{children:ReactNode}) {
   const items = [
-    {
-      title:"Share",
-      href:"/",
-      icon:<IconShare/>
-    },
-    {
-      title:"Dashboard",
-      href:"/dashboard",
-      icon:<IconDashboard/>
-    },
+    
     {
       title:"Home",
       href:"/",
       icon:<IconHomeFilled/>
     },
     {
-      title:"Profile",
-      href:"/",
-      icon:<IconUserFilled/>
+      title:"Dashboard",
+      href:"/dashboard",
+      icon:<IconDashboard/>
     },
     
   ]
@@ -51,14 +42,14 @@ export default function Provider({children}:{children:ReactNode}) {
           </GlareHover>
         </div>        
         {splashCursor && <SplashCursor/>}
-        {/* <Squares 
+        <Squares 
         speed={0.5} 
         squareSize={20}
         direction='diagonal' // up, down, left, right, diagonal
-        borderColor='#004030'
+        borderColor='#black'
         hoverFillColor='#222'        
-        /> */}
-        <div className='fixed h-screen'>
+        />
+        {/* <div className='fixed h-screen'>
           <LightRays
             raysOrigin="top-center"
             raysColor="#00ffff"
@@ -71,7 +62,7 @@ export default function Provider({children}:{children:ReactNode}) {
             distortion={0.05}
             className="custom-rays"
           />
-        </div>
+        </div> */}
         <div className='flex  mx-auto fixed right-0 left-0 bottom-4' style={{zIndex:1000}}>
           <FloatingDock items={items}/>    
 
