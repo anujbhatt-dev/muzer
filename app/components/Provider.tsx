@@ -3,8 +3,10 @@ import React, { ReactNode } from 'react'
 import { FloatingDock } from './ui/floating-dock'
 import { IconDashboard, IconHomeFilled, IconShare, IconUserFilled } from '@tabler/icons-react'
 import DarkVeil from './ui/DarkVeil/DarkVeil'
+import { useAuth } from '@clerk/nextjs'
 
 export default function Provider({children}:{children:ReactNode}) {
+  const {isSignedIn} = useAuth()
   const items = [
     
     {
@@ -18,15 +20,18 @@ export default function Provider({children}:{children:ReactNode}) {
       icon:<IconDashboard/>
     },    
   ]
+
     
   return (
     <>
         <div style={{ width: '100%', height: '100vh', position: 'fixed' }}>
           <DarkVeil />
         </div>
+        {isSignedIn &&
         <div className='flex  mx-auto fixed right-0 left-0 bottom-4' style={{zIndex:1000}}>
           <FloatingDock items={items}/>    
-        </div>
+        </div>        
+        }
        {children}
        
   

@@ -5,11 +5,11 @@ import React from 'react'
 
 export default function GetStarted({classes}:{classes:string}) {
   return (
-    <div className={classes}>
         <SignInButton forceRedirectUrl="/dashboard" mode="modal">
-            Get Started
+          <div className={classes}>
+                  Get Started
+              <LogIn />
+          </div>
         </SignInButton>
-        <LogIn />
-    </div>
   )
 }

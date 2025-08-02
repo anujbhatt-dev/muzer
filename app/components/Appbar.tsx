@@ -1,36 +1,33 @@
-"use client"
-import { SignedIn, SignedOut, useClerk, UserButton } from '@clerk/clerk-react'
-import { LogIn, LogOut } from 'lucide-react'
-import React from 'react'
-import GetStarted from './GetStarted'
-import Link from 'next/link'
-
+"use client";
+import { SignedIn, SignedOut, SignInButton, useClerk, UserButton, useSignIn } from "@clerk/clerk-react";
+import { LogIn, LogOut } from "lucide-react";
+import React from "react";
+import Link from "next/link";
+import Image from "next/image";
+import signature from "@/public/mylivesignature.png"
 
 export default function Appbar() {
-    const {signOut, isSignedIn} = useClerk()
-    
-    
+  const { signOut } = useClerk();
+
   return (
-    <div className='flex w-full justify-between p-8 px-4 md:px-20 text-white font-semibold items-center sticky top-0 right-0 left-0 z-50'>
-        <Link href="/" className='font-extrabold tracking-widest text-xl cursor-pointer'>
-            NAACHOGAAO
-        </Link>
-        {/* {
-            isSignedIn &&
-            <Link href={"/dashboard"} className='text-zinc-500 hover:text-[orangered] transition-all duration-75'>
-                Dashboard
-            </Link>
-        } */}
-        <div className='flex gap-5' >
-                <SignedIn>                        
-                    <UserButton/>
-                    <LogOut onClick={()=>signOut()}/>
-                </SignedIn>                    
-                <SignedOut>
-                    {/* <GetStarted classes="text-[0.8rem] bg-zinc-900 hover:bg-purple-800 cursor-pointer px-8 py-3 hidden lg:flex items-center gap-4 rounded-md shadow-sm active:shadow-md active:shadow-purple-500/50 hover:shadow-purple-500/10  transition-all duration-150"/> */}
-                    <LogIn className=''/>
-                </SignedOut>
-        </div>
+    <div className="flex w-full justify-between p-8 px-0 pr-8 md:px-20 text-white font-semibold items-center sticky top-0 right-0 left-0 z-50">
+      <Link href="/" className="font-extrabold tracking-widest text-xl cursor-pointer relative">
+        <div>NAACHOGAAO</div>
+        <Image  src={signature} alt="" className="absolute top-[0%] left-[60%] invert" />
+      </Link>
+
+      <div className="flex gap-5">
+        <SignedIn>
+          <UserButton />
+          <LogOut className="cursor-pointer" onClick={() => signOut()} />
+        </SignedIn>
+
+        <SignedOut>
+           <SignInButton forceRedirectUrl="/dashboard" mode="modal">
+                <LogIn className="cursor-pointer"/>
+            </SignInButton> 
+        </SignedOut>
+      </div>
     </div>
-  )
+  );
 }
