@@ -1,15 +1,15 @@
 "use client"
 import { SignInButton } from '@clerk/nextjs'
-import { Play } from 'lucide-react'
+import { LogIn } from 'lucide-react'
 import React from 'react'
 
 export default function GetStarted({classes}:{classes:string}) {
   return (
     <div className={classes}>
-        <Play className="w-4 h-4" />
         <SignInButton forceRedirectUrl="/dashboard" mode="modal">
             Get Started
         </SignInButton>
+        <LogIn />
     </div>
   )
 }
