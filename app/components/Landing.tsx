@@ -19,13 +19,13 @@ export default function Landing() {
           <h1 className={`${anton.className} font-bold text-[3rem] lg:text-[5rem] uppercase`}>
             Naachogaao
           </h1>
-            <TextGenerateEffect words="Join your favorite creators&apos; music streams " className=" max-w-[40rem] mx-auto mt-8" />
+            <TextGenerateEffect words="Join your favorite creators&apos; music streams " className=" max-w-[40rem] mx-auto mt-8" /> 
             <TextGenerateEffect startDelay={1} words="Add songs, vote for favorites, and experience music together in real-time. 
             The future of social music streaming is here." className=" max-w-[40rem] mx-auto mb-12 -mt-2" />
             {/* CTA Buttons */}
             <div className="flex flex-col sm:flex-row gap-4 animate-fade-in delay-500 mt-4">
             <SignedOut>
-            <GetStarted classes="text-sm bg-green-900/80 hover:bg-green-800 cursor-pointer px-10 py-4 flex items-center gap-4 rounded-lg shadow-sm active:shadow-md active:shadow-green-500/50 hover:shadow-green-500/10  transition-all duration-150 justify-center backdrop-blur-xl"/>
+            <GetStarted classes="text-xl shadow-[0_20px_50px_rgba(0,68,38,_0.7)] bg-green-600/80 hover:bg-green-800 cursor-pointer px-10 py-4 flex items-center gap-4 hover:px-8 rounded-full active:shadow-md active:shadow-green-500/50 hover:shadow-green-500/10 hover:-translate-y-[2px]  transition-all duration-150 justify-between backdrop-blur-xl w-[18rem]"/>
             </SignedOut>          
             </div>
         </div>
