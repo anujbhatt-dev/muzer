@@ -10,12 +10,12 @@ export default function Landing() {
 
   
   return (
-    <section className={`${anton.className} tracking-widest relative min-h-[80vh] flex justify-center lg:justify-between flex-col lg:flex-row`}>      
+    <section className={`${anton.className} tracking-widest relative min-h-[80vh] flex justify-center lg:justify-between flex-col lg:flex-row px-0 md:px-20`}>      
       <Redirect/>            
 
       {/* Content */}
       {/* <div className="relative z-10 flex justify-between"> */}
-        <div className="mb-8 animate-fade-in lg:mt-[10rem] text-center lg:text-left">
+        <div className="mb-8 animate-fade-in lg:mt-[2rem] text-center lg:text-left">
           <h1 className={`${anton.className} font-bold text-[3rem] lg:text-[5rem] uppercase`}>
             Naachogaao
           </h1>

@@ -13,7 +13,7 @@ export default function Appbar() {
     <div className="flex w-full justify-between p-8 px-0 pr-8 md:px-20 text-white font-semibold items-center sticky top-0 right-0 left-0 z-50">
       <Link href="/" className="font-extrabold tracking-widest text-xl cursor-pointer relative">
         <div>NAACHOGAAO</div>
-        <Image  src={signature} alt="" className="absolute top-[0%] left-[60%] invert" />
+        <Image  src={signature} alt="" className="absolute top-[30%] left-[60%] invert w-20 h-auto" />
       </Link>
 
       <div className="flex gap-5">
