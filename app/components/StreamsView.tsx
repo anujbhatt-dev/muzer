@@ -10,11 +10,9 @@ import { IconArrowNarrowRightDashed } from '@tabler/icons-react';
 import { AnimatedTooltip } from './animated-tooltip';
 import Image from 'next/image';
 import { CardBody, CardContainer, CardItem } from '@/components/ui/3d-card';
-import Dither from './ui/Dither/Dither';
 import { BackgroundGradient } from './ui/background-gradient';
 import { io, Socket } from "socket.io-client";
 import { toast } from 'sonner';
-import { log } from 'console';
 
 interface YouTubeVideo {
     id: string;
@@ -93,7 +91,8 @@ export default function StreamsView({streamerName,playVideo=false}:{streamerName
   }
 
 
-  useEffect(() => {
+  useEffect(() => {    
+    console.log("calling");
     
     try {
       const fetchUserName = async () => {
@@ -102,10 +101,9 @@ export default function StreamsView({streamerName,playVideo=false}:{streamerName
           body:JSON.stringify({
             id:userId
           })
-        })
-        console.log("name fetched successfully");
-                
+        })        
         const data = await res.json()
+        console.log("name fetched successfully",data);
         setUsername(data.username)
         console.log("username fetched", data.username, streamerName);      
         const socket = io(socketURL, {
@@ -118,7 +116,9 @@ export default function StreamsView({streamerName,playVideo=false}:{streamerName
             joineeUsername:data.username
            },
         });  
+
         socketRef.current = socket
+
         socket.on("connect_error", (err) => console.error("Socket error:", err));
         socket.on("disconnect", () => console.log("Socket disconnected"));
         
@@ -132,11 +132,12 @@ export default function StreamsView({streamerName,playVideo=false}:{streamerName
           setCurrentStream(activeStream.stream)
         })
 
-        socketRef.current.on('joined_room',(res)=>{             
+        socket.on('joined_room',(res)=>{             
             console.log(`streamers called`,res);      
             setOnlineUsers(res.onlineusers)  
             setStreamRoomDetails(res.onlineUserFullDetails)  
             setStreams(res.streams)
+            
 
             if (res.activeStream?.stream) {
               const stream = res.activeStream.stream;
@@ -159,9 +160,16 @@ export default function StreamsView({streamerName,playVideo=false}:{streamerName
           console.log("added stream", streams);
           setStreams(streams)
         })
+
+        socketRef.current.on("all_streams",(res)=>{
+          console.log("all_streams res", res);
+          
+          setStreams(res)
+        })
         
       }
       fetchUserName();
+
 
 
     } catch (error) {  
@@ -187,60 +195,60 @@ export default function StreamsView({streamerName,playVideo=false}:{streamerName
   
   
 
-  useEffect(() => {
-    if (!streamerName) return;
-    let streamInterval: NodeJS.Timeout;
-    const fetchStreams = async () => {
-      if (document.visibilityState !== "visible") return;
+  // useEffect(() => {
+  //   if (!streamerName) return;
+  //   let streamInterval: NodeJS.Timeout;
+  //   const fetchStreams = async () => {
+  //     if (document.visibilityState !== "visible") return;
       
-      try {
-        const res = await fetch("/api/streams", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            username: streamerName,
-            asker: userId,
-          }),
-        });
+  //     try {
+  //       const res = await fetch("/api/streams", {
+  //         method: "POST",
+  //         headers: { "Content-Type": "application/json" },
+  //         body: JSON.stringify({
+  //           username: streamerName,
+  //           asker: userId,
+  //         }),
+  //       });
   
-        const data = await res.json();
-        setStreams(data.streams);
+  //       const data = await res.json();
+  //       setStreams(data.streams);
   
-        if (data.activeStream?.stream) {
-          const stream = data.activeStream.stream;
-          setCurrentStream(stream);
+  //       if (data.activeStream?.stream) {
+  //         const stream = data.activeStream.stream;
+  //         setCurrentStream(stream);
   
-          if (stream.playedTs) {
-            const diff = Math.floor(
-              (new Date().getTime() - new Date(stream.playedTs).getTime()) / 1000
-            );
-            console.log("seek time", diff);
-            setSeekTime(diff + 2);
-          }
-        } else {
-          setCurrentStream(null);
-          setSeekTime(0);
-        }
-      } catch (err) {
-        console.error("Failed to fetch streams:", err);
-        toast("Failed to fetch streams")
-      } finally {
-        setStreamsLoading(false);
-      }
-    };
+  //         if (stream.playedTs) {
+  //           const diff = Math.floor(
+  //             (new Date().getTime() - new Date(stream.playedTs).getTime()) / 1000
+  //           );
+  //           console.log("seek time", diff);
+  //           setSeekTime(diff + 2);
+  //         }
+  //       } else {
+  //         setCurrentStream(null);
+  //         setSeekTime(0);
+  //       }
+  //     } catch (err) {
+  //       console.error("Failed to fetch streams:", err);
+  //       toast("Failed to fetch streams")
+  //     } finally {
+  //       setStreamsLoading(false);
+  //     }
+  //   };
   
-    // Initial call
-    // fetchStreams();
-    // Poll every 5 seconds
-    // streamInterval = setInterval(fetchStreams, 5000);
+  //   // Initial call
+  //   fetchStreams();
+  //   // Poll every 5 seconds
+  //   streamInterval = setInterval(fetchStreams, 5000);
   
-    // Cleanup on unmount
+  //   // Cleanup on unmount
 
 
-    console.log("thumbnail  "+thumbnail)
+  //   console.log("thumbnail  "+thumbnail)
 
-    // return () => clearInterval(streamInterval);
-  }, [streamerName, userId]);
+  //   return () => clearInterval(streamInterval);
+  // }, [streamerName, userId]);
   
 
 
@@ -283,11 +291,13 @@ export default function StreamsView({streamerName,playVideo=false}:{streamerName
               streamId:streamId,
               userId
             })
+            toast.success("You have Upvote Successfully!!");
           }else{
             socketRef.current.emit("downvote_stream",{
               streamId:streamId,
               userId
             })
+            toast.success("Your Vote Has Been Removed Successfully!!");
           }
         }
       } catch (error) {
@@ -331,14 +341,14 @@ export default function StreamsView({streamerName,playVideo=false}:{streamerName
     {(currentStream || streams && streams?.length>0)  ?
     <div className='flex flex-col-reverse lg:flex-row-reverse justify-between gap-x-4 gap-y-2'>
         {(streams && streams.length) ? 
-        <div className='min-h-full  flex-1 '>
+        <div className='min-h-full  flex-1 z-50'>
               <div className='flex flex-col gap-y-4 '>
                 <div className='text-sm uppercase mt-8 md:mt-0 text-zinc-500'>         
                   Watch Next
                 </div>
                 <AnimatePresence>
-                {streams.map((stream, i) => (
-                  <div key={stream.id+i} >
+                {streams.map((stream, i) => {
+                  return <div key={stream.id+i} >
                   <motion.div  
                   layout 
                   initial={{ opacity: 0, y: 20, scale: 0.95 }}
@@ -366,12 +376,12 @@ export default function StreamsView({streamerName,playVideo=false}:{streamerName
                       Upcoming Song
                     </div>}
                     </div>
-                ))}
+                })}
                 </AnimatePresence>  
               </div>
         </div>:
-        <div  className='flex items-stretch flex-1 relative rounded-2xl overflow-hidden min-h-[60%]'>      
-              <Dither
+        <div  className='flex items-center flex-1 relative rounded-2xl overflow-hidden min-h-[20vh] lg:min-h-[60%]'>      
+              {/* <Dither
                 waveColor={[0.5, 0.5, 0.5]}
                 disableAnimation={false}
                 enableMouseInteraction={true}
@@ -380,11 +390,11 @@ export default function StreamsView({streamerName,playVideo=false}:{streamerName
                 waveAmplitude={0.3}
                 waveFrequency={3}
                 waveSpeed={0.05}                
-              />        
+              />         */}
               <CardContainer  className="inter-var h-full w-full flex-1" containerClassName='flex-1  absolute -translate-x-[50%] left-[50%]'>
               <BackgroundGradient>
                 <CardBody
-                  className="relative group/card  hover:shadow-2xl hover:shadow-emerald-500/[0.1]  backdrop-blur-sm bg-black/80 border-white/[0.2] rounded-xl p-6 border flex flex-col justify-center items-center w-auto ">
+                  className="relative group/card  hover:shadow-2xl hover:shadow-emerald-500/[0.1]  backdrop-blur-sm bg-black border-white/[0.2] rounded-xl p-6 border flex flex-col justify-center items-center w-auto ">
                   <CardItem 
                     translateZ="50"
                     translatex="-10"
