@@ -17,10 +17,7 @@ const nextConfig: NextConfig = {
         hostname:"fastly.picsum.photos"
       }
     ],
-  },
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
+  }
 };
 
 export default nextConfig;
