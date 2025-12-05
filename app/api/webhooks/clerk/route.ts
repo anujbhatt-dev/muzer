@@ -1,42 +1,25 @@
-import { prismaClient } from '@/app/lib/db';
 import { NextRequest, NextResponse } from 'next/server';
+import { convex, api } from '@/app/lib/convexClient';
 
 export async function POST(req: NextRequest) {
   const body = await req.json();
 
-  // Ensure it's the `user.created` event
-  if (body.type === 'user.created') {
-    const { id, email_addresses } = body.data;
-
-    const email = email_addresses?.[0]?.email_address;
-
-    if (!email) {
-      return NextResponse.json({ error: 'No email found' }, { status: 400 });
-    }
-
-    // Generate a base username from the email prefix
-    let baseUsername = email.split('@')[0].replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
-    if (!baseUsername) baseUsername = "user";
-
-    let username = baseUsername;
-    let suffix = 1;
-
-    // Ensure the username is unique
-    while (await prismaClient.user.findUnique({ where: { username } })) {
-      username = `${baseUsername}${suffix++}`;
-    }
-
-    // Save to Prisma
-    await prismaClient.user.create({
-      data: {
-        id,
-        email,
-        username,
-      },
-    });
-
-    return NextResponse.json({ success: true });
+  if (body.type !== 'user.created') {
+    return NextResponse.json({ message: 'Event ignored' });
   }
 
-  return NextResponse.json({ message: 'Event ignored' });
+  const { id, email_addresses, username } = body.data ?? {};
+  const email = email_addresses?.[0]?.email_address;
+
+  if (!email || !id) {
+    return NextResponse.json({ error: 'Missing user data' }, { status: 400 });
+  }
+
+  const result = await convex.mutation(api.users.registerUser, {
+    clerkId: id,
+    email,
+    usernameHint: username,
+  });
+
+  return NextResponse.json({ success: true, user: result });
 }

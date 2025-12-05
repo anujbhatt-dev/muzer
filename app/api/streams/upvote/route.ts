@@ -1,32 +1,21 @@
-import { prismaClient } from "@/app/lib/db";
 import { NextRequest, NextResponse } from "next/server";
-import z from "zod";
-
-
-const UpvoteSchema = z.object({
-    streamId:z.string(),
-    userId:z.string()
-})
+import { convex, api } from "@/app/lib/convexClient";
+import { Id } from "@/convex/_generated/dataModel";
 
 export async function POST(request:NextRequest){
-    try {
-        const data = UpvoteSchema.parse(await request.json());
-        
-        await prismaClient.upvote.create({
-            data:{
-                userId:data.userId,
-                streamId:data.streamId
-            }
-        })
+  const { streamId, userId } = await request.json();
 
-        return NextResponse.json({
-            message:"vote successful"
-        })
-    } catch (error) {
-        return NextResponse.json({
-            message:"error while upvoting"
-        },{
-            status:403
-        })
-    }
+  if (!streamId || !userId) {
+    return NextResponse.json(
+      { error: "Missing streamId or userId" },
+      { status: 400 }
+    );
+  }
+
+  const res = await convex.mutation(api.streams.upvote, {
+    streamId: streamId as Id<"streams">,
+    userId,
+  });
+
+  return NextResponse.json(res, { status: 200 });
 }

@@ -1,47 +1,21 @@
-import { prismaClient } from "@/app/lib/db";
 import { NextRequest, NextResponse } from "next/server";
-import z from "zod";
-
-
-const UpvoteSchema = z.object({
-    streamId:z.string(),
-    userId:z.string()
-})
+import { convex, api } from "@/app/lib/convexClient";
+import { Id } from "@/convex/_generated/dataModel";
 
 export async function POST(request:NextRequest){
-    try {
-        const data = UpvoteSchema.parse(await request.json());
-        const hasUpvoted = await prismaClient.upvote.findFirst({
-            where:{
-                userId:data.userId,
-                streamId:data.streamId
-            }
-        })
+  const { streamId, userId } = await request.json();
 
+  if (!streamId || !userId) {
+    return NextResponse.json(
+      { error: "Missing streamId or userId" },
+      { status: 400 }
+    );
+  }
 
-        if(!hasUpvoted){
-            console.log("has not upvoted "+JSON.stringify(data));
-            
-        }
+  const res = await convex.mutation(api.streams.downvote, {
+    streamId: streamId as Id<"streams">,
+    userId,
+  });
 
-        await prismaClient.upvote.delete({
-            where:{
-                userId_streamId:{
-                    userId:data.userId,
-                    streamId:data.streamId
-                }
-            }
-        })
-
-        return NextResponse.json({
-            message:"vote removed successfully"
-        })
-
-    } catch (error) {
-        return NextResponse.json({
-            message:"error while downvoting"
-        },{
-            status:403
-        })
-    }
+  return NextResponse.json(res, { status: 200 });
 }

@@ -1,34 +1,68 @@
-import { prismaClient } from "@/app/lib/db";
 import { NextRequest, NextResponse } from "next/server";
-import z from "zod";
-
-// Schema to validate request body
-const MeSchema = z.object({
-  id: z.string(),
-});
+import { convex, api } from "@/app/lib/convexClient";
+import { createClerkClient } from "@clerk/backend";
 
 export async function POST(request: NextRequest) {
-  try {
-    const body = await request.json();
-    const data = MeSchema.parse(body);
+  const { id } = await request.json();
 
-    const user = await prismaClient.user.findUnique({
-      where: { id: data.id },
-      select: { username: true },
-    });
-
-    if (!user) {
-      return NextResponse.json({ error: "User not found" }, { status: 404 });
-    }
-  console.log("user: "+JSON.stringify(user));
-  
-    return NextResponse.json({ username: user.username });
-  } catch (error) {
-    if (error instanceof z.ZodError) {
-      return NextResponse.json( {error: "Invalid request data"}, { status: 400 });
-    }
-
-    console.error("Internal error:", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+  if (!id) {
+    return NextResponse.json(
+      { error: "Missing id in request body" },
+      { status: 400 }
+    );
   }
+
+  let user = await convex.query(api.users.getMe, { clerkId: id });
+
+  // If user is missing in Convex, try to register from Clerk profile
+  if (!user) {
+    try {
+      const secretKey = process.env.CLERK_SECRET_KEY;
+      if (!secretKey) {
+        return NextResponse.json(
+          { error: "CLERK_SECRET_KEY not set on server" },
+          { status: 500 }
+        );
+      }
+
+      const clerk = createClerkClient({ secretKey });
+      const clerkUser = await clerk.users.getUser(id);
+      const email =
+        clerkUser.emailAddresses?.[0]?.emailAddress ||
+        clerkUser.primaryEmailAddressId
+          ? clerkUser.emailAddresses.find(
+              (e) => e.id === clerkUser.primaryEmailAddressId
+            )?.emailAddress
+          : undefined;
+
+      if (!email) {
+        return NextResponse.json(
+          { error: "User email not found" },
+          { status: 404 }
+        );
+      }
+
+      const registered = await convex.mutation(api.users.registerUser, {
+        clerkId: id,
+        email,
+        usernameHint: clerkUser.username ?? clerkUser.firstName ?? undefined,
+      });
+
+      user = registered
+        ? {
+            username: registered.username,
+            email: registered.email,
+            clerkId: registered.clerkId,
+          }
+        : null;
+    } catch (err) {
+      console.error("Failed to sync user from Clerk", err);
+      return NextResponse.json(
+        { error: "User not found and sync failed" },
+        { status: 404 }
+      );
+    }
+  }
+
+  return NextResponse.json({ username: user!.username });
 }

@@ -42,11 +42,13 @@ export default function RootLayout({
     <ClerkProvider dynamic>
       <html lang="en" suppressHydrationWarning={true}>
         <body
-          className={` ${poppins.className}  antialiased bg-zinc-950 text-white  `}
+          className={`${poppins.className} antialiased transition-colors duration-300`}
+          data-theme="dark"
+          style={{ background: "var(--bg)", color: "var(--text-primary)" }}
           >  
             <Toaster />
             <Provider>
-            <div className="p-2 md:p-0">
+            <div className="">
               <Appbar/>
               {children}      
             </div>
