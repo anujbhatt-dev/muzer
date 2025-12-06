@@ -31,11 +31,11 @@ export default function Provider({children}:{children:ReactNode}) {
 
   return (
     <ConvexProviderWithClerk client={convexClient} useAuth={useAuth}>
-      {isSignedIn &&
+      {/* {isSignedIn &&
         <div className='flex  mx-auto fixed right-0 left-0 bottom-4' style={{zIndex:1000}}>
           <FloatingDock items={items}/>    
         </div>        
-      }
+      } */}
       {children}
     </ConvexProviderWithClerk>
   )

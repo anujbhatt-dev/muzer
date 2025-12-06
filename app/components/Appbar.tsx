@@ -71,19 +71,20 @@ export default function Appbar() {
       initial={{ y: 0 }}
       animate={{ y: visible ? 0 : -110 }}
       transition={{ duration: 0.25, ease: "easeInOut" }}
-      className="mx-auto inset-x-0 top-0 z-50 flex justify-center pointer-events-none"
+      className="sticky inset-x-0 top-0 z-50 flex justify-center pointer-events-none"
     >
       <div
-        className="pointer-events-auto relative flex w-full items-center justify-between gap-3 border-b px-5 py-3 sm:px-6 sm:py-4 transition-all duration-300 backdrop-blur"
+        className="pointer-events-auto relative mt-3 flex w-[92%] max-w-6xl items-center justify-between gap-3 rounded-full border px-4 py-3 sm:px-6 sm:py-4 transition-all duration-300 backdrop-blur-2xl shadow-[0_18px_36px_-18px_rgba(0,0,0,0.45)]"
         style={{
-          background: scrolled ? "var(--panel-strong)" : "var(--panel)",
+          background:
+            "linear-gradient(145deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02)), radial-gradient(circle at 20% 20%, rgba(244,114,182,0.18), transparent 32%), radial-gradient(circle at 80% 0%, rgba(168,85,247,0.18), transparent 30%)",
           borderColor: scrolled ? "var(--border-strong)" : "var(--border)",
           color: "var(--text-primary)",
-          boxShadow: scrolled ? "0 18px 32px rgba(0,0,0,0.15)" : undefined,
+          boxShadow: scrolled ? "0 22px 44px rgba(0,0,0,0.2)" : "0 18px 30px rgba(0,0,0,0.12)",
         }}
       >
         <Link href="/" className="flex items-center gap-3 text-base font-semibold tracking-[0.16em] sm:text-lg sm:tracking-[0.18em]">
-          <span className="rounded-full bg-gradient-to-r from-amber-400 via-rose-300 to-fuchsia-400 px-3 py-1 text-xs sm:text-sm text-zinc-950 shadow-lg shadow-amber-500/20">
+          <span className="rounded-full bg-gradient-to-r from-amber-400 via-rose-300 to-fuchsia-500 px-3 py-1 text-xs sm:text-sm text-zinc-950 shadow-lg shadow-amber-500/20 ring-1 ring-white/50">
             NAACHOGAAO
           </span>
           <span className="hidden text-[color:var(--text-secondary)] sm:inline">Live Rooms</span>
@@ -92,7 +93,7 @@ export default function Appbar() {
         <div className="hidden items-center gap-3 md:flex">
           <button
             onClick={() => applyTheme(theme === "dark" ? "light" : "dark")}
-            className="flex items-center gap-2 rounded-full border px-3 py-2 text-sm font-semibold transition hover:-translate-y-[1px]"
+            className="flex items-center gap-2 rounded-full border px-3 py-2 text-sm font-semibold transition hover:-translate-y-[1px] hover:shadow-lg hover:shadow-amber-500/10"
             style={{
               borderColor: "var(--border)",
               color: "var(--text-secondary)",
@@ -108,7 +109,7 @@ export default function Appbar() {
             <UserButton />
             <button
               onClick={() => signOut()}
-              className="group flex items-center gap-2 rounded-full border px-3 py-2 text-sm font-semibold transition hover:-translate-y-[1px]"
+              className="group flex items-center gap-2 rounded-full border px-3 py-2 text-sm font-semibold transition hover:-translate-y-[1px] hover:shadow-lg hover:shadow-amber-500/10"
               style={{
                 borderColor: "var(--border)",
                 color: "var(--text-secondary)",
@@ -132,7 +133,7 @@ export default function Appbar() {
         <div className="flex items-center gap-2 md:hidden">
           <button
             onClick={() => applyTheme(theme === "dark" ? "light" : "dark")}
-            className="flex items-center gap-1 rounded-full border px-3 py-2 text-sm font-semibold transition hover:-translate-y-[1px]"
+            className="flex items-center gap-1 rounded-full border px-3 py-2 text-sm font-semibold transition hover:-translate-y-[1px] hover:shadow-md hover:shadow-amber-500/10"
             style={{
               borderColor: "var(--border)",
               color: "var(--text-secondary)",
@@ -146,7 +147,7 @@ export default function Appbar() {
             onClick={() => setMenuOpen((prev) => !prev)}
             aria-expanded={menuOpen}
             aria-label="Toggle navigation menu"
-            className="flex items-center gap-2 rounded-full border px-3 py-2 text-sm font-semibold transition hover:-translate-y-[1px]"
+            className="flex items-center gap-2 rounded-full border px-3 py-2 text-sm font-semibold transition hover:-translate-y-[1px] hover:shadow-md hover:shadow-amber-500/10"
             style={{
               borderColor: "var(--border)",
               color: "var(--text-primary)",
@@ -162,8 +163,11 @@ export default function Appbar() {
             initial={{ opacity: 0, y: -8 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -8 }}
-            className="absolute right-3 top-[calc(100%+0.75rem)] w-full min-w-[260px] max-w-sm rounded-2xl border p-4 shadow-2xl backdrop-blur md:hidden"
-            style={{ background: "var(--panel-strong)", borderColor: "var(--border-strong)" }}
+            className="absolute right-0 left-0 top-[calc(100%+0.75rem)] rounded-2xl border p-4 shadow-2xl backdrop-blur md:hidden "
+            style={{
+              background: "rgba(12,12,18,0.98)",
+              borderColor: "var(--border-strong)",
+            }}
           >
             <div className="flex items-center justify-between gap-2 pb-3 border-b" style={{ borderColor: "var(--border)" }}>
               <div className="text-sm font-semibold text-[color:var(--text-primary)]">Quick actions</div>

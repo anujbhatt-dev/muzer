@@ -82,6 +82,28 @@ export default function StreamsView({
 
   const fallbackThumb = "/pic.jpg";
 
+  const ensureVideoPlaying = useCallback(() => {
+    const player = playerRef.current;
+    const ytState = (typeof window !== "undefined" && (window as any).YT?.PlayerState) || {};
+    if (!player || typeof player.getPlayerState !== "function" || !ytState) return;
+
+    const state = player.getPlayerState();
+    if (state === ytState.ENDED) return;
+
+    if (
+      state === ytState.PAUSED ||
+      state === ytState.UNSTARTED ||
+      state === ytState.BUFFERING ||
+      state === ytState.CUED
+    ) {
+      try {
+        player.playVideo();
+      } catch (error) {
+        console.warn("Unable to force playback", error);
+      }
+    }
+  }, []);
+
   const streamsData = useQuery(
     api.streams.listStreams,
     roomSlug ? { roomSlug, askerId: userId ?? undefined } : "skip"
@@ -281,6 +303,43 @@ export default function StreamsView({
   }, [autoJoin, authReady, userId, roomMeta, joinRoom]);
   
 
+  useEffect(() => {
+    const resumeOnVisibility = () => ensureVideoPlaying();
+
+    document.addEventListener("visibilitychange", resumeOnVisibility);
+    window.addEventListener("focus", resumeOnVisibility);
+    window.addEventListener("pageshow", resumeOnVisibility);
+    window.addEventListener("blur", resumeOnVisibility);
+
+    // Lightweight keep-alive to avoid the micro-pause when returning to the tab.
+    const ticker = window.setInterval(resumeOnVisibility, 500);
+
+    return () => {
+      document.removeEventListener("visibilitychange", resumeOnVisibility);
+      window.removeEventListener("focus", resumeOnVisibility);
+      window.removeEventListener("pageshow", resumeOnVisibility);
+      window.removeEventListener("blur", resumeOnVisibility);
+      window.clearInterval(ticker);
+    };
+  }, [ensureVideoPlaying]);
+
+  useEffect(() => {
+    ensureVideoPlaying();
+  }, [currentStream?._id, ensureVideoPlaying]);
+
+  const handlePlayerStateChange = useCallback((event: any) => {
+    const ytState = (typeof window !== "undefined" && (window as any).YT?.PlayerState) || {};
+    if (!ytState || !event?.target) return;
+
+    // Some browsers pause background iframes when the tab blurs; kick it back into play unless the video ended.
+    if (
+      event.data === ytState.PAUSED ||
+      event.data === ytState.CUED ||
+      event.data === ytState.UNSTARTED
+    ) {
+      event.target.playVideo?.();
+    }
+  }, []);
 
   const playNext = async () => {
     if (nextLoading) return;
@@ -355,7 +414,7 @@ export default function StreamsView({
           <StreamSidebar activeSlug={roomSlug} onRoomSelect={onRoomSelect} />
         )}
         <div className="flex-1">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2 text-sm text-zinc-400">
+          <div className="flex flex-row md:items-center justify-between gap-2 text-sm text-zinc-400">
             <div className="flex flex-wrap items-center gap-2 text-sm">
               <span className="px-3 py-1 rounded-full border border-white/10 bg-white/5 text-white font-semibold">
                 {roomMeta?.name ?? roomSlug}
@@ -365,7 +424,7 @@ export default function StreamsView({
                   Hosted by @{roomMeta.ownerUsername}
                 </span>
               )}
-            </div>
+            </div> 
             <div className="flex gap-2">
               <button
                 onClick={handleShare}
@@ -485,33 +544,24 @@ export default function StreamsView({
                     <div className="absolute -right-20 top-6 h-60 w-60 bg-gradient-to-br from-emerald-500/40 via-teal-500/30 to-cyan-500/20 rounded-full blur-3xl opacity-60" />
                   </div>
                   <BackgroundGradient
-                    containerClassName="w-full max-w-lg mx-auto"
-                    className="rounded-3xl bg-black/70 border border-white/10 p-8 shadow-2xl shadow-purple-500/20 backdrop-blur-xl"
+                    containerClassName="w-full max-w-xl mx-auto"
+                    className="rounded-3xl bg-black/70 border border-white/10 p-6 sm:p-8 shadow-xl shadow-purple-500/20 backdrop-blur-xl"
                   >
-                    <div className="relative aspect-square w-full rounded-2xl border border-white/10 bg-gradient-to-b from-white/5 via-white/0 to-white/5 overflow-hidden mx-auto flex items-center justify-center px-8">
-                      <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(255,255,255,0.08),transparent_45%),radial-gradient(circle_at_80%_0%,rgba(255,114,255,0.08),transparent_40%)]" />
-                      <div className="relative text-center space-y-4">
-                        <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-4 py-2 text-xs tracking-[0.25em] text-purple-100 uppercase">
-                          <IconSparkles className="h-4 w-4 text-amber-200" />
-                          Queue
-                        </div>
-                        <p className="text-2xl font-semibold text-zinc-50 leading-tight">
-                          Treat the room to a premium pick
-                        </p>
-                        <p className="text-sm text-zinc-400 max-w-sm mx-auto">
-                          The queue is empty. Drop in a YouTube gem and set the vibe for everyone.
-                        </p>
-                        <div className="flex items-center justify-center gap-3 pt-2">
-                          <span className="px-3 py-1 rounded-full border border-white/10 bg-white/5 text-[11px] uppercase tracking-wide text-zinc-200">
-                            Curated
-                          </span>
-                          <span className="px-3 py-1 rounded-full border border-white/10 bg-white/5 text-[11px] uppercase tracking-wide text-zinc-200">
-                            Ad-free zone
-                          </span>
-                          <span className="px-3 py-1 rounded-full border border-white/10 bg-white/5 text-[11px] uppercase tracking-wide text-zinc-200">
-                            Crowd pick
-                          </span>
-                        </div>
+                    <div className="flex flex-col gap-4 sm:gap-5 text-center items-center">
+                      <div className="flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[11px] tracking-[0.2em] text-purple-100 uppercase">
+                        <IconSparkles className="h-4 w-4 text-amber-200" />
+                        Queue empty
+                      </div>
+                      <p className="text-xl sm:text-2xl font-semibold text-zinc-50 leading-tight">
+                        Add the first track for everyone
+                      </p>
+                      <p className="text-sm text-zinc-400 max-w-md">
+                        Drop a YouTube link above and we’ll line it up for the room.
+                      </p>
+                      <div className="flex flex-wrap justify-center gap-2 text-[11px] text-zinc-200">
+                        <span className="px-3 py-1 rounded-full border border-white/10 bg-white/5">Quick add</span>
+                        <span className="px-3 py-1 rounded-full border border-white/10 bg-white/5">Ad-free</span>
+                        <span className="px-3 py-1 rounded-full border border-white/10 bg-white/5">Shared queue</span>
                       </div>
                     </div>
                   </BackgroundGradient>
@@ -522,7 +572,7 @@ export default function StreamsView({
                 {/* current stream */}
                 <div className="">
                   <div>
-                    <div className="rounded-[10px] overflow-hidden mb-4">
+                    <div className="overflow-hidden mb-4">
                       {currentStream?.extractedId && (
                         // <BackgroundGradient
                         //   containerClassName="block"
@@ -534,6 +584,7 @@ export default function StreamsView({
                             iframeClassName="h-[200px] md:h-[350px] lg:h-[500px] w-full"
                             onEnd={canControlPlayback ? playNext : undefined}
                             loading="eager"
+                            onStateChange={handlePlayerStateChange}
                             onReady={(e) => {
                               const player = e.target;
                               playerRef.current = player;
@@ -548,9 +599,10 @@ export default function StreamsView({
                                 mute: 0,
                                 modestbranding: 1,
                                 controls: 1,
+                                playsinline: 1,
                               },
                             }}
-                            className="mx-auto rounded-2xl overflow-hidden"
+                            className="mx-auto lg:rounded-2xl overflow-hidden"
                           />
                         // </BackgroundGradient>
                       )}

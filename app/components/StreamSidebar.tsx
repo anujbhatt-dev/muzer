@@ -2,11 +2,10 @@
 import { useEffect, useState, type ElementType } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import {
-  IconLogout,
-  IconPlus,
-  IconApps,
   IconHome2,
   IconLoader2,
+  IconMenu2,
+  IconX,
 } from "@tabler/icons-react";
 import { useAuth, useClerk } from "@clerk/nextjs";
 import { toast } from "sonner";
@@ -29,9 +28,11 @@ export function StreamSidebar({ activeSlug, onRoomSelect }: StreamSidebarProps) 
   const [loadingRooms, setLoadingRooms] = useState(false);
   const [creating, setCreating] = useState(false);
   const [roomName, setRoomName] = useState("");
+  const [mobileOpen, setMobileOpen] = useState(false);
   const isOwnerOfAnyRoom = rooms.some((room) => room.owned);
   const isOnDashboard = pathname === "/dashboard";
   const isOnRoomPage = pathname?.includes("/room/");
+  const closeMobileMenu = () => setMobileOpen(false);
 
   useEffect(() => {
     const fetchRooms = async () => {
@@ -109,55 +110,30 @@ export function StreamSidebar({ activeSlug, onRoomSelect }: StreamSidebarProps) 
   const handleNavigate = (href?: string, action?: () => Promise<void> | void) => {
     if (action) {
       action();
+      closeMobileMenu();
       return;
     }
     if (href) {
+      closeMobileMenu();
       router.push(href);
     }
   };
 
   const currentSlug =
-    activeSlug ?? (pathname?.startsWith("/room/") ? pathname.split("/room/")[1] : null);
-
-  // const navItems: {
-  //   label: string;
-  //   description: string;
-  //   icon: ElementType;
-  //   href?: string;
-  //   action?: () => Promise<void> | void;
-  //   tone?: "accent" | "neutral" | "danger";
-  // }[] = [
-  //   {
-  //     label: "Create room",
-  //     description: "Spin up a fresh queue",
-  //     icon: IconPlus,
-  //     action: handleCreateRoom,
-  //     tone: "accent",
-  //   },
-  //   {
-  //     label: "Rooms",
-  //     description: "Pick a space below",
-  //     icon: IconApps,
-  //   },
-  //   {
-  //     label: "Home",
-  //     description: "Discover streams",
-  //     icon: IconHome2,
-  //     href: "/",
-  //   },
-  //   {
-  //     label: "Logout",
-  //     description: "Sign out securely",
-  //     icon: IconLogout,
-  //     action: () => signOut(),
-  //     tone: "danger",
-  //   },
-  // ];
-
+  activeSlug ?? (pathname?.startsWith("/room/") ? pathname.split("/room/")[1] : null);
   if (!isLoaded || !isSignedIn) return null;
 
-  return (
-    <aside className="hidden lg:flex w-72 shrink-0 flex-col gap-4 rounded-2xl border border-white/10 bg-gradient-to-b from-white/5 via-white/3 to-black/20 p-4 shadow-[0_20px_60px_-40px_rgba(0,0,0,0.65)] backdrop-blur-2xl sticky top-5 self-start">
+  const handleRoomClick = (slug: string) => {
+    if (onRoomSelect) {
+      onRoomSelect(slug);
+    } else {
+      router.push(`/room/${slug}`);
+    }
+    closeMobileMenu();
+  };
+
+  const sidebarContent = (
+    <div className="flex w-full flex-col gap-4">
       <div className="flex items-center justify-between text-xs uppercase tracking-[0.15em] text-zinc-400">
         <span>Navigation</span>
         <span className="rounded-full bg-white/10 px-2 py-0.5 text-[10px] text-white/80">Live</span>
@@ -181,42 +157,6 @@ export function StreamSidebar({ activeSlug, onRoomSelect }: StreamSidebarProps) 
           <p className="text-xs text-white/60">Manage your rooms</p>
         </div>
       </button>
-
-      {/* <div className="space-y-3">
-        {navItems.map((item) => {
-          const Icon = item.icon;
-          const toneStyles =
-            item.tone === "accent"
-              ? "border-purple-400/30 bg-purple-500/10 hover:border-purple-300/60 hover:shadow-purple-500/15"
-              : item.tone === "danger"
-              ? "border-red-400/30 bg-red-500/10 hover:border-red-300/60 hover:shadow-red-500/15"
-              : "border-white/10 bg-white/5 hover:border-white/30 hover:shadow-white/10";
-          const clickable = !!(item.href || item.action);
-
-          return (
-            <button
-              key={item.label}
-              onClick={() => clickable && handleNavigate(item.href, item.action)}
-              className={cn(
-                "group w-full rounded-xl border px-4 py-3 text-left shadow-sm transition-all duration-200",
-                toneStyles,
-                clickable ? "cursor-pointer" : "cursor-default opacity-80"
-              )}
-              type="button"
-            >
-              <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-black/40 text-white shadow-inner shadow-black/50 ring-1 ring-white/10">
-                  <Icon className="h-5 w-5" />
-                </div>
-                <div className="flex-1">
-                  <p className="text-sm font-semibold text-white">{item.label}</p>
-                  <p className="text-xs text-white/60">{item.description}</p>
-                </div>
-              </div>
-            </button>
-          );
-        })}
-      </div> */}
 
       {!isOnRoomPage && (isOnDashboard || isOwnerOfAnyRoom) && (
         <div className="mt-2 rounded-xl border border-white/10 bg-black/30 p-3 shadow-inner shadow-black/50">
@@ -253,9 +193,7 @@ export function StreamSidebar({ activeSlug, onRoomSelect }: StreamSidebarProps) 
             {rooms.map((room) => (
               <button
                 key={room.slug}
-                onClick={() =>
-                  onRoomSelect ? onRoomSelect(room.slug) : router.push(`/room/${room.slug}`)
-                }
+                onClick={() => handleRoomClick(room.slug)}
                 className={cn(
                   "w-full rounded-lg border px-3 py-2 text-left text-sm transition hover:border-purple-400/50 hover:bg-purple-500/10",
                   currentSlug === room.slug
@@ -276,6 +214,54 @@ export function StreamSidebar({ activeSlug, onRoomSelect }: StreamSidebarProps) 
           </div>
         )}
       </div>
-    </aside>
+    </div>
+  );
+
+  return (
+    <>
+      <button
+        type="button"
+        onClick={() => setMobileOpen(true)}
+        className="lg:hidden fixed bottom-6 right-4 z-50 inline-flex items-center gap-2 rounded-full border border-white/15 bg-gradient-to-r from-purple-600/80 to-blue-500/70 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-purple-900/30 backdrop-blur-lg"
+      >
+        <IconMenu2 className="h-5 w-5" />
+        Rooms
+      </button>
+
+      <div
+        className={cn(
+          "lg:hidden fixed inset-0 z-60 transition-all duration-200 ease-out",
+          mobileOpen ? "pointer-events-auto opacity-100" : "pointer-events-none opacity-0"
+        )}
+      >
+        <div
+          className="absolute inset-0 bg-black/70 backdrop-blur-sm"
+          onClick={closeMobileMenu}
+        />
+        <div
+          className={cn(
+            "absolute inset-0 px-4 py-5 ",
+            mobileOpen ? "translate-y-0" : "translate-y-4"
+          )}
+        >
+          <div className="relative h-full w-full">
+            <button
+              type="button"
+              onClick={closeMobileMenu}
+              className="h-[5vh] aspect-square flex justify-center items-center ml-auto mb-4 z-10 rounded-full border border-white/10 bg-black/60 p-2 text-white shadow-lg backdrop-blur"
+            >
+              <IconX className="h-5 w-5" />
+            </button>
+            <div className="h-[90vh] overflow-y-auto rounded-2xl border border-white/10 bg-gradient-to-b from-white/10 via-white/5 to-black/30 p-4 shadow-[0_20px_60px_-40px_rgba(0,0,0,0.65)] backdrop-blur-2xl">
+              {sidebarContent}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <aside className="hidden lg:flex w-72 shrink-0 flex-col gap-4 rounded-2xl border border-white/10 bg-gradient-to-b from-white/5 via-white/3 to-black/20 p-4 shadow-[0_20px_60px_-40px_rgba(0,0,0,0.65)] backdrop-blur-2xl sticky top-5 self-start">
+        {sidebarContent}
+      </aside>
+    </>
   );
 }
