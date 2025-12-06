@@ -600,6 +600,14 @@ export default function StreamsView({
                             onReady={(e) => {
                               const player = e.target;
                               playerRef.current = player;
+                              if (typeof player.getIframe === "function") {
+                                player
+                                  .getIframe()
+                                  .then((iframe: HTMLIFrameElement) => {
+                                    iframe.setAttribute("allow", "autoplay; fullscreen; picture-in-picture");
+                                  })
+                                  .catch(() => {});
+                              }
                               if (typeof player.seekTo === "function" && typeof seekTime === "number") {
                                 player.seekTo(seekTime);
                               }
