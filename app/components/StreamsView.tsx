@@ -79,6 +79,7 @@ export default function StreamsView({
   const [addStreamLoading, setAddStreamLoading] = useState(false);
   const [joiningRoom, setJoiningRoom] = useState(false);
   const autoJoinAttempted = useRef(false);
+  const autoNextTriggered = useRef(false);
 
   const fallbackThumb = "/pic.jpg";
 
@@ -339,6 +340,21 @@ export default function StreamsView({
     }
   }, [currentStream?._id, currentStream?.extractedId, ensureVideoPlaying]);
 
+  useEffect(() => {
+    if (!canControlPlayback) {
+      autoNextTriggered.current = false;
+      return;
+    }
+    if (currentStream) {
+      autoNextTriggered.current = false;
+      return;
+    }
+    if (!streamsLoading && normalizedStreams.length > 0 && !nextLoading && !autoNextTriggered.current) {
+      autoNextTriggered.current = true;
+      playNext();
+    }
+  }, [canControlPlayback, currentStream, normalizedStreams.length, streamsLoading, nextLoading]);
+
   const handlePlayerStateChange = useCallback((event: any) => {
     const ytState = (typeof window !== "undefined" && (window as any).YT?.PlayerState) || {};
     if (!ytState || !event?.target) return;
@@ -456,36 +472,67 @@ export default function StreamsView({
             </div>
           </div>
 
-          <div className="my-4 flex justify-center gap-x-2 h-[4rem] relative mx-auto ">
-            <input
-              placeholder="Add Youtube Song URL"
-              className="border rounded-2xl border-zinc-700/80 w-full mb-4 bg-transparent backdrop-blur-3xl text-center p-2 text-md h-full px-[5rem] lg:px-[10rem] outline-none"
-              type="text"
-              value={songInput}
-              onChange={(e) => setSongInput(e.target.value)}
-            />
-            {thumbnail && !thumbnail.includes("null") && (
-              <Image
-                width={1080}
-                height={916}
-                className="rounded-full h-3/4 w-auto aspect-square absolute left-2 animate-spin top-[50%] -translate-y-[50%] object-cover"
-                src={thumbnail}
-                alt=""
-              />
-            )}
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              handleSubmit();
+            }}
+            className="my-6 mx-auto w-full"
+          >
+            <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-white/5 px-4 py-4 sm:px-6 sm:py-5 shadow-lg shadow-purple-500/10 backdrop-blur-2xl">
+              <div className="absolute -left-10 -top-16 h-44 w-44 rounded-full bg-gradient-to-br from-purple-500/30 via-pink-500/20 to-orange-400/20 blur-3xl opacity-70" />
+              <div className="absolute -right-10 bottom-0 h-40 w-40 rounded-full bg-gradient-to-br from-sky-500/30 via-indigo-500/20 to-blue-500/20 blur-3xl opacity-60" />
 
-            <button
-              disabled={addStreamLoading}
-              onClick={handleSubmit}
-              className="absolute right-4 flex top-[50%] -translate-y-[50%] cursor-pointer"
-            >
-              {!addStreamLoading ? (
-                <IconArrowNarrowRightDashed className="w-10 h-10" />
-              ) : (
-                <Loader className="w-10 h-10 animate-spin" />
-              )}
-            </button>
-          </div>
+              <div className="relative flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
+                {thumbnail && !thumbnail.includes("null") && (
+                  <Image
+                    width={120}
+                    height={120}
+                    className="h-14 w-14 sm:h-16 sm:w-16 rounded-2xl object-cover border border-white/10 shadow-md shadow-purple-900/10"
+                    src={thumbnail}
+                    alt="Preview thumbnail"
+                  />
+                )}
+
+                <div className="flex-1 space-y-2">
+                  <div className="flex items-center justify-between text-xs uppercase tracking-[0.16em] text-zinc-400">
+                    <span>Start streaming</span>
+                    <span className="text-[10px] text-amber-200">Paste a YouTube link</span>
+                  </div>
+                  <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+                    <input
+                      placeholder="Paste a YouTube song URL to queue it up"
+                      className="w-full rounded-2xl border border-white/10 bg-black/40 px-4 py-3 text-sm text-white placeholder:text-zinc-500 focus:border-purple-400 focus:outline-none focus:ring-2 focus:ring-purple-400/30"
+                      type="text"
+                      value={songInput}
+                      onChange={(e) => setSongInput(e.target.value)}
+                      aria-label="YouTube song URL"
+                    />
+                    <button
+                      type="submit"
+                      disabled={addStreamLoading}
+                      className="inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-purple-500 via-fuchsia-500 to-orange-400 px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-purple-500/30 transition hover:shadow-purple-400/40 disabled:cursor-not-allowed disabled:opacity-70"
+                    >
+                      {addStreamLoading ? (
+                        <>
+                          <Loader className="h-4 w-4 animate-spin" />
+                          Adding
+                        </>
+                      ) : (
+                        <>
+                          <span className="text-nowrap">Add to queue</span>
+                          <IconArrowNarrowRightDashed className="h-5 w-5" />
+                        </>
+                      )}
+                    </button>
+                  </div>
+                  <p className="text-[11px] text-zinc-500">
+                    Press Enter or tap the arrow to drop the track in for everyone.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </form>
 
           {currentStream || (normalizedStreams && normalizedStreams?.length > 0) ? (
             <div className="flex flex-col-reverse lg:flex-row-reverse justify-between gap-x-4 gap-y-2">
@@ -670,53 +717,58 @@ export default function StreamsView({
               </div>
             </div>
           ) : (
-            <div className="flex justify-center items-center relative h-[60vh] overflow-hidden rounded-2xl mx-auto bg-gradient-to-br from-zinc-950 via-black to-zinc-900 border border-zinc-800 p-6">
-              {streamsLoading ? (
-                <div className="text-center space-y-2">
-                  <p className="text-lg font-bold text-zinc-200 uppercase">
-                    <span className="text-[orangered]">Streams</span> Loading
-                  </p>
-                  <p className="text-sm text-zinc-400">Fetching the queue...</p>
-                </div>
-              ) : !thumbnail?.includes("null") ? (
-                <div className="flex flex-col items-center gap-4 text-center max-w-md w-full">
-                  <p className="text-sm font-bold text-zinc-200 uppercase">
-                    Start Streaming - Add a YouTube song URL
-                  </p>
-                  {thumbnail && thumbnail !== "" && !thumbnail.includes("null") && (
-                   <>
-                    <Image
-                      width={1080}
-                      height={916}
-                      className="rounded-xl mb-4 w-full h-full max-h-[260px] object-cover"
-                      src={
-                        thumbnail ??
-                        "https://fastly.picsum.photos/id/237/200/300.jpg?hmac=TmmQSbShHz9CdQm0NkEjx1Dyh_Y984R9LpNrpvH2D_U"
-                      }
-                      alt=""
-                      />
-                      <button
-                        className="p-3 rounded-xl bg-zinc-950 text-white text-lg font-bold flex gap-x-2 items-center justify-center hover:bg-amber-200 hover:text-black cursor-pointer border border-zinc-800 transition-colors"
-                        onClick={handleSubmit}
-                      >
-                        <span className="text-sm font-bold uppercase">
-                          Play Now
-                        </span>
-                        <IconArrowNarrowRightDashed className="w-8 h-8" />
-                      </button>
-                    </>
-                  )}
-                </div>
-              ) : (
-                <div className="text-center space-y-3 max-w-lg">
-                  <p className="text-lg font-bold text-zinc-200 w-full text-center uppercase">
-                    Add <span className="text-[orangered]">Streams</span> start <span className="text-[orangered]">Streaming</span>
-                  </p>
-                  <p className="text-sm font-medium text-zinc-400">
-                    No need to watch alone just join your favorite streams
-                  </p>
-                </div>
-              )}
+            <div className="relative min-h-[60vh] flex items-center justify-center overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-zinc-950 via-black to-zinc-900 shadow-2xl shadow-purple-900/10 px-6 py-12 sm:px-10 max-w-6xl mx-auto">
+              <div className="pointer-events-none absolute -top-16 -left-10 h-64 w-64 rounded-full bg-gradient-to-br from-purple-500/40 via-pink-500/30 to-orange-400/20 blur-3xl opacity-70" />
+              <div className="pointer-events-none absolute -bottom-20 right-0 h-72 w-72 rounded-full bg-gradient-to-br from-sky-500/30 via-blue-500/20 to-indigo-500/20 blur-3xl opacity-60" />
+
+              <div className="relative w-full max-w-3xl text-center space-y-6">
+                {streamsLoading ? (
+                  <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-[11px] uppercase tracking-[0.18em] text-purple-100">
+                    <Loader className="h-4 w-4 animate-spin" />
+                    Fetching queue
+                  </div>
+                ) : (
+                  <div className="space-y-6">
+                    <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-[11px] uppercase tracking-[0.18em] text-purple-100">
+                      <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
+                      Start streaming
+                    </div>
+
+                    <div className="space-y-3">
+                      <h2 className="text-2xl sm:text-3xl font-semibold text-zinc-50">
+                        Add a YouTube song URL to kick things off
+                      </h2>
+                      <p className="text-sm sm:text-base text-zinc-400 max-w-2xl mx-auto">
+                        Drop a link in the field above and we will queue it for everyone. Bring your friends in by sharing the room link.
+                      </p>
+                    </div>
+
+                    {thumbnail && thumbnail !== "" && !thumbnail.includes("null") && (
+                      <div className="flex flex-col items-center gap-4 text-center max-w-xl w-full mx-auto">
+                        <Image
+                          width={1080}
+                          height={916}
+                          className="rounded-2xl w-full h-full max-h-[260px] object-cover border border-white/10 shadow-lg shadow-purple-900/20"
+                          src={thumbnail}
+                          alt="Upcoming stream preview"
+                        />
+                        <button
+                          onClick={handleSubmit}
+                          className="inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-purple-500 via-fuchsia-500 to-orange-400 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-purple-500/30 transition hover:shadow-purple-400/40"
+                          disabled={addStreamLoading}
+                        >
+                          {addStreamLoading ? "Adding..." : "Play now"}
+                          {!addStreamLoading && <IconArrowNarrowRightDashed className="w-5 h-5" />}
+                        </button>
+                      </div>
+                    )}
+
+                    <p className="text-xs text-zinc-500">
+                      Tip: paste the link, then hit enter or the arrow button to add it to the queue.
+                    </p>
+                  </div>
+                )}
+              </div>
             </div>
           )}
         </div>

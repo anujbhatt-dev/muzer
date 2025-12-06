@@ -2,6 +2,7 @@
 
 import { SignedIn, SignedOut, SignInButton, UserButton, useClerk } from "@clerk/clerk-react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { LogIn, LogOut, Menu, Moon, SunMedium, X } from "lucide-react";
@@ -12,6 +13,8 @@ export default function Appbar() {
   const [scrolled, setScrolled] = useState(false);
   const [theme, setTheme] = useState<"dark" | "light">("dark");
   const [menuOpen, setMenuOpen] = useState(false);
+  const pathname = usePathname();
+  const positionClass = pathname === "/" ? "fixed" : "sticky";
 
   const applyTheme = useCallback((value: "dark" | "light") => {
     setTheme(value);
@@ -39,8 +42,7 @@ export default function Appbar() {
     window.addEventListener("scroll", handleScroll, { passive: true });
 
     const stored = localStorage.getItem("theme") as "dark" | "light" | null;
-    const prefersLight = window.matchMedia && window.matchMedia("(prefers-color-scheme: light)").matches;
-    applyTheme(stored ?? (prefersLight ? "light" : "dark"));
+    applyTheme(stored ?? "dark");
 
     return () => window.removeEventListener("scroll", handleScroll);
   }, [applyTheme]);
@@ -71,7 +73,7 @@ export default function Appbar() {
       initial={{ y: 0 }}
       animate={{ y: visible ? 0 : -110 }}
       transition={{ duration: 0.25, ease: "easeInOut" }}
-      className="sticky inset-x-0 top-0 z-50 flex justify-center pointer-events-none"
+      className={`${positionClass} inset-x-0 top-0 z-50 flex justify-center pointer-events-none`}
     >
       <div
         className="pointer-events-auto relative mt-3 flex w-[92%] max-w-6xl items-center justify-between gap-3 rounded-full border px-4 py-3 sm:px-6 sm:py-4 transition-all duration-300 backdrop-blur-2xl shadow-[0_18px_36px_-18px_rgba(0,0,0,0.45)]"
