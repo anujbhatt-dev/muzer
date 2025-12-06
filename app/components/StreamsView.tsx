@@ -325,7 +325,19 @@ export default function StreamsView({
 
   useEffect(() => {
     ensureVideoPlaying();
-  }, [currentStream?._id, ensureVideoPlaying]);
+
+    // Explicitly load and play the next video when the active stream changes, even in a background tab.
+    if (playerRef.current && currentStream?.extractedId) {
+      try {
+        if (typeof playerRef.current.loadVideoById === "function") {
+          playerRef.current.loadVideoById(currentStream.extractedId);
+        }
+        playerRef.current.playVideo?.();
+      } catch (error) {
+        console.warn("Unable to start next stream automatically", error);
+      }
+    }
+  }, [currentStream?._id, currentStream?.extractedId, ensureVideoPlaying]);
 
   const handlePlayerStateChange = useCallback((event: any) => {
     const ytState = (typeof window !== "undefined" && (window as any).YT?.PlayerState) || {};
