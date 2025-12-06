@@ -76,42 +76,27 @@ export default function Appbar() {
       className={`${positionClass} inset-x-0 top-0 z-50 flex justify-center pointer-events-none`}
     >
       <div
-        className="pointer-events-auto relative mt-3 flex w-[92%] max-w-6xl items-center justify-between gap-3 rounded-full border px-4 py-3 sm:px-6 sm:py-4 transition-all duration-300 backdrop-blur-2xl shadow-[0_18px_36px_-18px_rgba(0,0,0,0.45)]"
+        className={`pointer-events-auto relative mt-0 flex ${pathname === "/" ? "max-w-6xl w-[92%]" : "w-full mx-4"}  items-center justify-between gap-3 rounded-b-2xl border px-4 py-3 sm:px-6 sm:py-4 transition-all duration-300 backdrop-blur-2xl shadow-[0_18px_36px_-18px_rgba(0,0,0,0.45)]`}
         style={{
-          background:
-            "linear-gradient(145deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02)), radial-gradient(circle at 20% 20%, rgba(244,114,182,0.18), transparent 32%), radial-gradient(circle at 80% 0%, rgba(168,85,247,0.18), transparent 30%)",
           borderColor: scrolled ? "var(--border-strong)" : "var(--border)",
           color: "var(--text-primary)",
           boxShadow: scrolled ? "0 22px 44px rgba(0,0,0,0.2)" : "0 18px 30px rgba(0,0,0,0.12)",
         }}
       >
         <Link href="/" className="flex items-center gap-3 text-base font-semibold tracking-[0.16em] sm:text-lg sm:tracking-[0.18em]">
-          <span className="rounded-full bg-gradient-to-r from-amber-400 via-rose-300 to-fuchsia-500 px-3 py-1 text-xs sm:text-sm text-zinc-950 shadow-lg shadow-amber-500/20 ring-1 ring-white/50">
+          <span className="rounded-full bg-gradient-to-r from-amber-400 via-rose-300 to-fuchsia-500 px-3 py-1 text-xs sm:text-xs text-zinc-950 shadow-lg shadow-amber-500/20 ring-1 ring-white/50">
             NAACHOGAAO
           </span>
-          <span className="hidden text-[color:var(--text-secondary)] sm:inline">Live Rooms</span>
         </Link>
 
         <div className="hidden items-center gap-3 md:flex">
-          <button
-            onClick={() => applyTheme(theme === "dark" ? "light" : "dark")}
-            className="flex items-center gap-2 rounded-full border px-3 py-2 text-sm font-semibold transition hover:-translate-y-[1px] hover:shadow-lg hover:shadow-amber-500/10"
-            style={{
-              borderColor: "var(--border)",
-              color: "var(--text-secondary)",
-              background: "var(--pill)",
-            }}
-            aria-label="Toggle theme"
-          >
-            {theme === "dark" ? <SunMedium className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-            <span className="hidden sm:inline">{theme === "dark" ? "Light" : "Dark"} mode</span>
-          </button>
+          
 
           <SignedIn>
             <UserButton />
             <button
               onClick={() => signOut()}
-              className="group flex items-center gap-2 rounded-full border px-3 py-2 text-sm font-semibold transition hover:-translate-y-[1px] hover:shadow-lg hover:shadow-amber-500/10"
+              className="group flex items-center gap-2 rounded-full border px-3 py-2 text-xs font-semibold transition hover:-translate-y-[1px] hover:shadow-lg hover:shadow-amber-500/10"
               style={{
                 borderColor: "var(--border)",
                 color: "var(--text-secondary)",
@@ -124,18 +109,26 @@ export default function Appbar() {
 
           <SignedOut>
             <SignInButton forceRedirectUrl="/dashboard" mode="modal">
-              <button className="group flex items-center gap-2 rounded-full bg-gradient-to-r from-amber-400 via-rose-400 to-fuchsia-500 px-5 py-2 text-sm font-semibold text-zinc-950 shadow-[0_14px_40px_rgba(251,191,36,0.28)] transition hover:-translate-y-[1px] hover:from-amber-300 hover:via-rose-300 hover:to-fuchsia-400">
+              <button className="group flex items-center gap-2 rounded-full bg-gradient-to-r from-amber-400 via-rose-400 to-fuchsia-500 px-5 py-2 text-xs font-semibold text-zinc-950 shadow-[0_14px_40px_rgba(251,191,36,0.28)] transition hover:-translate-y-[1px] hover:from-amber-300 hover:via-rose-300 hover:to-fuchsia-400">
                 <LogIn className="h-4 w-4" />
                 <span>Join in</span>
               </button>
             </SignInButton>
           </SignedOut>
+
+          <button
+            onClick={() => applyTheme(theme === "dark" ? "light" : "dark")}
+            className="flex items-center gap-2 text-xs font-semibold"
+            aria-label="Toggle theme"
+          >
+            {theme === "dark" ? <SunMedium className="h-6 w-6 text-amber-600" /> : <Moon className="h-6 w-6 text-emerald-500" />}
+          </button>
         </div>
 
         <div className="flex items-center gap-2 md:hidden">
           <button
             onClick={() => applyTheme(theme === "dark" ? "light" : "dark")}
-            className="flex items-center gap-1 rounded-full border px-3 py-2 text-sm font-semibold transition hover:-translate-y-[1px] hover:shadow-md hover:shadow-amber-500/10"
+            className="flex items-center gap-1 rounded-full border px-3 py-2 text-xs font-semibold transition hover:-translate-y-[1px] hover:shadow-md hover:shadow-amber-500/10"
             style={{
               borderColor: "var(--border)",
               color: "var(--text-secondary)",
@@ -149,7 +142,7 @@ export default function Appbar() {
             onClick={() => setMenuOpen((prev) => !prev)}
             aria-expanded={menuOpen}
             aria-label="Toggle navigation menu"
-            className="flex items-center gap-2 rounded-full border px-3 py-2 text-sm font-semibold transition hover:-translate-y-[1px] hover:shadow-md hover:shadow-amber-500/10"
+            className="flex items-center gap-2 rounded-full border px-3 py-2 text-xs font-semibold transition hover:-translate-y-[1px] hover:shadow-md hover:shadow-amber-500/10"
             style={{
               borderColor: "var(--border)",
               color: "var(--text-primary)",
@@ -172,7 +165,7 @@ export default function Appbar() {
             }}
           >
             <div className="flex items-center justify-between gap-2 pb-3 border-b" style={{ borderColor: "var(--border)" }}>
-              <div className="text-sm font-semibold text-[color:var(--text-primary)]">Quick actions</div>
+              <div className="text-xs font-semibold text-[color:var(--text-primary)]">Quick actions</div>
               <Link href="/" onClick={() => setMenuOpen(false)} className="text-xs uppercase tracking-[0.16em] text-[color:var(--text-secondary)]">
                 Home
               </Link>
@@ -180,13 +173,13 @@ export default function Appbar() {
             <div className="mt-3 grid gap-3">
               <SignedIn>
                 <div className="flex items-center justify-between rounded-xl border px-3 py-2" style={{ borderColor: "var(--border)", background: "var(--card)" }}>
-                  <span className="text-sm font-semibold text-[color:var(--text-primary)]">Account</span>
+                  <span className="text-xs font-semibold text-[color:var(--text-primary)]">Account</span>
                   <UserButton afterSignOutUrl="/" />
                 </div>
                 <Link
                   href="/dashboard"
                   onClick={() => setMenuOpen(false)}
-                  className="flex items-center justify-center gap-2 rounded-full border px-4 py-2 text-sm font-semibold transition hover:-translate-y-[1px]"
+                  className="flex items-center justify-center gap-2 rounded-full border px-4 py-2 text-xs font-semibold transition hover:-translate-y-[1px]"
                   style={{ borderColor: "var(--border)", color: "var(--text-primary)", background: "var(--pill)" }}
                 >
                   Go to dashboard
@@ -196,7 +189,7 @@ export default function Appbar() {
                     setMenuOpen(false);
                     signOut();
                   }}
-                  className="flex items-center justify-center gap-2 rounded-full border px-4 py-2 text-sm font-semibold transition hover:-translate-y-[1px]"
+                  className="flex items-center justify-center gap-2 rounded-full border px-4 py-2 text-xs font-semibold transition hover:-translate-y-[1px]"
                   style={{ borderColor: "var(--border)", color: "var(--text-secondary)" }}
                 >
                   <LogOut className="h-4 w-4" />
@@ -206,7 +199,7 @@ export default function Appbar() {
 
               <SignedOut>
                 <SignInButton forceRedirectUrl="/dashboard" mode="modal">
-                  <button className="group flex w-full items-center justify-center gap-2 rounded-full bg-gradient-to-r from-amber-400 via-rose-400 to-fuchsia-500 px-5 py-3 text-sm font-semibold text-zinc-950 shadow-[0_14px_40px_rgba(251,191,36,0.28)] transition hover:-translate-y-[1px] hover:from-amber-300 hover:via-rose-300 hover:to-fuchsia-400">
+                  <button className="group flex w-full items-center justify-center gap-2 rounded-full bg-gradient-to-r from-amber-400 via-rose-400 to-fuchsia-500 px-5 py-3 text-xs font-semibold text-zinc-950 shadow-[0_14px_40px_rgba(251,191,36,0.28)] transition hover:-translate-y-[1px] hover:from-amber-300 hover:via-rose-300 hover:to-fuchsia-400">
                     <LogIn className="h-4 w-4" />
                     Join in
                   </button>
