@@ -1,5 +1,5 @@
 ﻿"use client"
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from 'react'
 import { useAuth } from '@clerk/nextjs';
 import { Loader, ThumbsUp, Share } from 'lucide-react';
 //@ts-ignore
@@ -82,6 +82,11 @@ export default function StreamsView({
   const autoNextTriggered = useRef(false);
 
   const fallbackThumb = "/pic.jpg";
+  const surface: CSSProperties = { background: "var(--card)", borderColor: "var(--border)" };
+  const surfaceStrong: CSSProperties = { background: "var(--card-strong)", borderColor: "var(--border-strong)" };
+  const panel: CSSProperties = { background: "var(--panel)", borderColor: "var(--border)" };
+  const textPrimary = "text-[color:var(--text-primary)]";
+  const textSecondary = "text-[color:var(--text-secondary)]";
 
   const ensureVideoPlaying = useCallback(() => {
     const player = playerRef.current;
@@ -442,13 +447,16 @@ export default function StreamsView({
           <StreamSidebar activeSlug={roomSlug} onRoomSelect={onRoomSelect} />
         )}
         <div className="flex-1">
-          <div className="flex flex-row md:items-center justify-between gap-2 text-sm text-zinc-400">
+          <div className={`flex flex-row md:items-center justify-between gap-2 text-sm ${textSecondary}`}>
             <div className="flex flex-wrap items-center gap-2 text-sm">
-              <span className="px-3 py-1 rounded-full border border-white/10 bg-white/5 text-white font-semibold">
+              <span
+                className={`px-3 py-1 rounded-full border text-sm font-semibold ${textPrimary}`}
+                style={surfaceStrong}
+              >
                 {roomMeta?.name ?? roomSlug}
               </span>
               {!roomMeta?.isOwner && roomMeta?.ownerUsername && (
-                <span className="text-xs uppercase tracking-[0.12em] text-zinc-500">
+                <span className="text-xs uppercase tracking-[0.12em] text-[color:var(--accent-rose)]">
                   Hosted by @{roomMeta.ownerUsername}
                 </span>
               )}
@@ -456,7 +464,8 @@ export default function StreamsView({
             <div className="flex gap-2">
               <button
                 onClick={handleShare}
-                className="text-xs px-3 py-2 rounded-full border border-zinc-700 hover:border-purple-500 flex items-center gap-2"
+                className={`text-xs px-3 py-2 rounded-full border flex items-center gap-2 ${textPrimary}`}
+                style={surface}
               >
                 <Share className="h-4 w-4" /> Share
               </button>
@@ -464,7 +473,8 @@ export default function StreamsView({
                 <button
                   disabled={joiningRoom || !authReady}
                   onClick={joinRoom}
-                  className="text-xs px-3 py-2 rounded-full border border-zinc-700 hover:border-purple-500 disabled:opacity-60"
+                  className={`text-xs px-3 py-2 rounded-full border disabled:opacity-60 ${textPrimary}`}
+                  style={surfaceStrong}
                 >
                   {joiningRoom ? "Joining..." : !authReady ? "Preparing..." : "Join room"}
                 </button>
@@ -479,30 +489,35 @@ export default function StreamsView({
             }}
             className="my-6 mx-auto w-full"
           >
-            <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-white/5 px-4 py-4 sm:px-6 sm:py-5 shadow-lg shadow-purple-500/10 backdrop-blur-2xl">
-              <div className="absolute -left-10 -top-16 h-44 w-44 rounded-full bg-gradient-to-br from-purple-500/30 via-pink-500/20 to-orange-400/20 blur-3xl opacity-70" />
-              <div className="absolute -right-10 bottom-0 h-40 w-40 rounded-full bg-gradient-to-br from-sky-500/30 via-indigo-500/20 to-blue-500/20 blur-3xl opacity-60" />
+            <div
+              className="relative overflow-hidden rounded-3xl border px-4 py-4 sm:px-6 sm:py-5 shadow-lg"
+              style={{ ...surfaceStrong, boxShadow: "0 24px 50px rgba(0,0,0,0.08)" }}
+            >
+              <div className="absolute -left-10 -top-16 h-44 w-44 rounded-full blur-3xl opacity-60" style={{ background: "var(--accent-amber-soft)" }} />
+              <div className="absolute -right-10 bottom-0 h-40 w-40 rounded-full blur-3xl opacity-60" style={{ background: "var(--accent-cyan-soft)" }} />
 
               <div className="relative flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
                 {thumbnail && !thumbnail.includes("null") && (
                   <Image
                     width={120}
                     height={120}
-                    className="h-14 w-14 sm:h-16 sm:w-16 rounded-2xl object-cover border border-white/10 shadow-md shadow-purple-900/10"
+                    className="h-14 w-14 sm:h-16 sm:w-16 rounded-2xl object-cover border shadow-md"
+                    style={surface}
                     src={thumbnail}
                     alt="Preview thumbnail"
                   />
                 )}
 
                 <div className="flex-1 space-y-2">
-                  <div className="flex items-center justify-between text-xs uppercase tracking-[0.16em] text-zinc-400">
+                  <div className={`flex items-center justify-between text-xs uppercase tracking-[0.16em] ${textSecondary}`}>
                     <span>Start streaming</span>
-                    <span className="text-[10px] text-amber-200">Paste a YouTube link</span>
+                    <span className="text-[10px] text-[color:var(--accent-amber)]">Paste a YouTube link</span>
                   </div>
                   <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
                     <input
                       placeholder="Paste a YouTube song URL to queue it up"
-                      className="w-full rounded-2xl border border-white/10 bg-black/40 px-4 py-3 text-sm text-white placeholder:text-zinc-500 focus:border-purple-400 focus:outline-none focus:ring-2 focus:ring-purple-400/30"
+                      className={`w-full rounded-2xl border px-4 py-3 text-sm placeholder:text-[color:var(--text-secondary)] focus:outline-none focus:ring-2 ${textPrimary}`}
+                      style={surface}
                       type="text"
                       value={songInput}
                       onChange={(e) => setSongInput(e.target.value)}
@@ -511,7 +526,8 @@ export default function StreamsView({
                     <button
                       type="submit"
                       disabled={addStreamLoading}
-                      className="inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-purple-500 via-fuchsia-500 to-orange-400 px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-purple-500/30 transition hover:shadow-purple-400/40 disabled:cursor-not-allowed disabled:opacity-70"
+                      className="inline-flex items-center justify-center gap-2 rounded-2xl px-4 py-3 text-sm font-semibold text-white shadow-lg transition hover:shadow-[0_16px_38px_rgba(0,0,0,0.16)] disabled:cursor-not-allowed disabled:opacity-70"
+                      style={{ background: "linear-gradient(120deg, var(--accent-amber), var(--accent-rose), var(--accent-cyan))", boxShadow: "0 18px 46px rgba(0,0,0,0.12)" }}
                     >
                       {addStreamLoading ? (
                         <>
@@ -526,7 +542,7 @@ export default function StreamsView({
                       )}
                     </button>
                   </div>
-                  <p className="text-[11px] text-zinc-500">
+                  <p className="text-[11px] text-[color:var(--text-secondary)]">
                     Press Enter or tap the arrow to drop the track in for everyone.
                   </p>
                 </div>
@@ -539,10 +555,10 @@ export default function StreamsView({
               {normalizedStreams && normalizedStreams.length ? (
                 <div className="min-h-full  flex-1 ">
                   <div className="flex flex-col gap-y-4 ">
-                    <div className="flex items-center gap-2 text-sm uppercase mt-8 md:mt-0 text-zinc-400 tracking-wide">
-                      <IconPlaylist className="h-4 w-4 text-purple-300" />
+                    <div className={`flex items-center gap-2 text-sm uppercase mt-8 md:mt-0 ${textSecondary} tracking-wide`}>
+                      <IconPlaylist className="h-4 w-4" style={{ color: "var(--accent-rose)" }} />
                       <span>Watch Next</span>
-                      <span className="h-px flex-1 bg-gradient-to-r from-purple-500/60 via-fuchsia-500/30 to-transparent"></span>
+                      <span className="h-px flex-1 bg-gradient-to-r from-[color:var(--accent-rose)]/50 via-[color:var(--accent-amber)]/30 to-transparent"></span>
                     </div>
                     <AnimatePresence>
                       {normalizedStreams.map((stream, i) => (
@@ -557,7 +573,8 @@ export default function StreamsView({
                               ease: [0.25, 0.46, 0.45, 0.94],
                               delay: i * 0.05,
                             }}
-                            className="flex flex-wrap md:flex-row gap-x-2  gap-y-4 md:items-center justify-between bg-zinc-900/80 p-2 lg:p-4 border border-zinc-400/20 shadow-md shadow-purple-900/10 rounded-lg"
+                            className={`flex flex-wrap md:flex-row gap-x-2  gap-y-4 md:items-center justify-between p-2 lg:p-4 rounded-lg ${textPrimary}`}
+                            style={{ ...surface, boxShadow: "0 14px 36px rgba(0,0,0,0.08)" }}
                           >
                             <div className="">
                               <Image
@@ -569,11 +586,11 @@ export default function StreamsView({
                               />
                             </div>
                             <div className="flex-1 self-start">
-                              <p className="text-zinc-300 text-sm md:text-md ">{stream.title}</p>
-                              <p className="text-white ">
-                                <span className="text-zinc-500 text-sm">votes:</span>{" "}
-                                <span>{stream.upvotes}</span>
-                              </p>
+                              <p className={`text-sm md:text-md ${textPrimary}`}>{stream.title}</p>
+                              <div className="mt-1 inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-semibold" style={surface}>
+                                <span className={`${textSecondary} uppercase tracking-[0.12em]`}>Votes</span>
+                                <span className="text-[color:var(--accent-rose)] text-sm">{stream.upvotes}</span>
+                              </div>
                             </div>
                             <div
                               onClick={() =>
@@ -582,13 +599,14 @@ export default function StreamsView({
                                   stream.hasUpvoted ? "downvote" : "upvote"
                                 )
                               }
-                              className="bg-zinc-800 hover:bg-purple-800 cursor-pointer px-3 py-3 flex items-center self-start gap-4 rounded-lg shadow-xl active:shadow-md active:shadow-purple-500/50 hover:shadow-purple-500/10  max-w-sm mx-auto transition-all duration-150 md:mx-4"
+                              className="cursor-pointer px-3 py-3 flex items-center self-start gap-4 rounded-lg max-w-sm mx-auto transition-all duration-150 md:mx-4"
+                              style={{ ...surfaceStrong, boxShadow: "0 10px 26px rgba(0,0,0,0.1)" }}
                             >
-                              <ThumbsUp className="w-4 h-4 " fill={stream.hasUpvoted ? "white" : "transparent"} />
+                              <ThumbsUp className="w-4 h-4 " fill={stream.hasUpvoted ? "var(--accent-rose)" : "transparent"} />
                             </div>
                           </motion.div>
                           {normalizedStreams.length > 1 && i == 0 && (
-                            <div className="text-sm uppercase mt-4 text-zinc-500">Upcoming Song</div>
+                            <div className={`text-sm uppercase mt-4 ${textSecondary}`}>Upcoming Song</div>
                           )}
                         </div>
                       ))}
@@ -596,31 +614,37 @@ export default function StreamsView({
                   </div>
                 </div>
               ) : (
-                <div className="flex items-center justify-center flex-1 relative rounded-3xl overflow-hidden min-h-[60%] bg-gradient-to-br from-zinc-950 via-black to-zinc-900 border border-zinc-800 px-4 py-8">
+                <div
+                  className="flex items-center justify-center flex-1 relative rounded-3xl overflow-hidden min-h-[60%] px-4 py-8"
+                  style={{ ...panel, borderRadius: "1.5rem" }}
+                >
                   <div className="absolute inset-0">
-                    <div className="absolute -top-24 -left-16 h-64 w-64 bg-gradient-to-br from-purple-500/50 via-pink-500/30 to-orange-500/30 rounded-full blur-3xl opacity-70" />
-                    <div className="absolute bottom-[-80px] left-1/4 h-72 w-72 bg-gradient-to-br from-blue-500/40 via-indigo-500/30 to-sky-500/20 rounded-full blur-3xl opacity-60" />
-                    <div className="absolute -right-20 top-6 h-60 w-60 bg-gradient-to-br from-emerald-500/40 via-teal-500/30 to-cyan-500/20 rounded-full blur-3xl opacity-60" />
+                    <div className="absolute -top-24 -left-16 h-64 w-64 rounded-full blur-3xl opacity-60" style={{ background: "var(--accent-rose-soft)" }} />
+                    <div className="absolute bottom-[-80px] left-1/4 h-72 w-72 rounded-full blur-3xl opacity-60" style={{ background: "var(--accent-cyan-soft)" }} />
+                    <div className="absolute -right-20 top-6 h-60 w-60 rounded-full blur-3xl opacity-60" style={{ background: "var(--accent-amber-soft)" }} />
                   </div>
                   <BackgroundGradient
                     containerClassName="w-full max-w-xl mx-auto"
-                    className="rounded-3xl bg-black/70 border border-white/10 p-6 sm:p-8 shadow-xl shadow-purple-500/20 backdrop-blur-xl"
+                    className="rounded-3xl p-6 sm:p-8 shadow-xl backdrop-blur-xl"
                   >
-                    <div className="flex flex-col gap-4 sm:gap-5 text-center items-center">
-                      <div className="flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[11px] tracking-[0.2em] text-purple-100 uppercase">
-                        <IconSparkles className="h-4 w-4 text-amber-200" />
+                    <div className="flex flex-col gap-4 sm:gap-5 text-center items-center rounded-2xl border p-4 sm:p-6" style={panel}>
+                      <div
+                        className="flex items-center gap-2 rounded-full border px-3 py-1 text-[11px] tracking-[0.2em] uppercase"
+                        style={surface}
+                      >
+                        <IconSparkles className="h-4 w-4" style={{ color: "var(--accent-amber)" }} />
                         Queue empty
                       </div>
-                      <p className="text-xl sm:text-2xl font-semibold text-zinc-50 leading-tight">
+                      <p className={`text-xl sm:text-2xl font-semibold leading-tight ${textPrimary}`}>
                         Add the first track for everyone
                       </p>
-                      <p className="text-sm text-zinc-400 max-w-md">
-                        Drop a YouTube link above and we’ll line it up for the room.
+                      <p className={`text-sm ${textSecondary} max-w-md`}>
+                        Drop a YouTube link above and we'll line it up for the room.
                       </p>
-                      <div className="flex flex-wrap justify-center gap-2 text-[11px] text-zinc-200">
-                        <span className="px-3 py-1 rounded-full border border-white/10 bg-white/5">Quick add</span>
-                        <span className="px-3 py-1 rounded-full border border-white/10 bg-white/5">Ad-free</span>
-                        <span className="px-3 py-1 rounded-full border border-white/10 bg-white/5">Shared queue</span>
+                      <div className={`flex flex-wrap justify-center gap-2 text-[11px] ${textSecondary}`}>
+                        <span className="px-3 py-1 rounded-full border" style={surface}>Quick add</span>
+                        <span className="px-3 py-1 rounded-full border" style={surface}>Ad-free</span>
+                        <span className="px-3 py-1 rounded-full border" style={surface}>Shared queue</span>
                       </div>
                     </div>
                   </BackgroundGradient>
@@ -648,12 +672,23 @@ export default function StreamsView({
                               const player = e.target;
                               playerRef.current = player;
                               if (typeof player.getIframe === "function") {
-                                player
-                                  .getIframe()
-                                  .then((iframe: HTMLIFrameElement) => {
-                                    iframe.setAttribute("allow", "autoplay; fullscreen; picture-in-picture");
-                                  })
-                                  .catch(() => {});
+                                try {
+                                  const maybeIframe = player.getIframe();
+                                  if (maybeIframe instanceof Promise) {
+                                    maybeIframe
+                                      .then((iframe: HTMLIFrameElement) => {
+                                        iframe?.setAttribute("allow", "autoplay; fullscreen; picture-in-picture");
+                                      })
+                                      .catch(() => {});
+                                  } else if (maybeIframe) {
+                                    (maybeIframe as HTMLIFrameElement).setAttribute(
+                                      "allow",
+                                      "autoplay; fullscreen; picture-in-picture"
+                                    );
+                                  }
+                                } catch {
+                                  // no-op if getIframe not available in this environment
+                                }
                               }
                               if (typeof player.seekTo === "function" && typeof seekTime === "number") {
                                 player.seekTo(seekTime);
@@ -685,7 +720,7 @@ export default function StreamsView({
                         </div>
                         {normalizedStreams && normalizedStreams.length > 0 && (
                           <div className="flex items-center justify-end cursor-pointer gap-x-2">
-                            <div className="text-zinc-500 text-sm uppercase">Next</div>
+                            <div className={`${textSecondary} text-sm uppercase`}>Next</div>
                             <IconArrowNarrowRightDashed className="w-14 h-14 hover:animate-pulse" />
                           </div>
                         )}
@@ -695,7 +730,7 @@ export default function StreamsView({
                     {/* online users */}
                     {onlineUsers && onlineUsers.length > 0 && streamRoomDetails && (
                       <div className="mb-4 ml-2">
-                        <div className="text-zinc-500 text-sm uppercase mb-2 mt-8">Online users</div>
+                        <div className={`${textSecondary} text-sm uppercase mb-2 mt-8`}>Online users</div>
                         <div className="flex gap-2">
                           {onlineUsers.map((onlineuser, i) => (
                             <div className="" key={i}>
@@ -717,28 +752,37 @@ export default function StreamsView({
               </div>
             </div>
           ) : (
-            <div className="relative min-h-[60vh] flex items-center justify-center overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-zinc-950 via-black to-zinc-900 shadow-2xl shadow-purple-900/10 px-6 py-12 sm:px-10 max-w-6xl mx-auto">
-              <div className="pointer-events-none absolute -top-16 -left-10 h-64 w-64 rounded-full bg-gradient-to-br from-purple-500/40 via-pink-500/30 to-orange-400/20 blur-3xl opacity-70" />
-              <div className="pointer-events-none absolute -bottom-20 right-0 h-72 w-72 rounded-full bg-gradient-to-br from-sky-500/30 via-blue-500/20 to-indigo-500/20 blur-3xl opacity-60" />
+            <div
+              className="relative min-h-[60vh] flex items-center justify-center overflow-hidden rounded-3xl border shadow-2xl px-6 py-12 sm:px-10 max-w-6xl mx-auto"
+              style={{ ...panel, boxShadow: "0 26px 64px rgba(0,0,0,0.12)" }}
+            >
+              <div className="pointer-events-none absolute -top-16 -left-10 h-64 w-64 rounded-full blur-3xl opacity-60" style={{ background: "var(--accent-rose-soft)" }} />
+              <div className="pointer-events-none absolute -bottom-20 right-0 h-72 w-72 rounded-full blur-3xl opacity-60" style={{ background: "var(--accent-cyan-soft)" }} />
 
               <div className="relative w-full max-w-3xl text-center space-y-6">
                 {streamsLoading ? (
-                  <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-[11px] uppercase tracking-[0.18em] text-purple-100">
+                  <div
+                    className="inline-flex items-center gap-2 rounded-full border px-4 py-2 text-[11px] uppercase tracking-[0.18em]"
+                    style={surface}
+                  >
                     <Loader className="h-4 w-4 animate-spin" />
                     Fetching queue
                   </div>
                 ) : (
                   <div className="space-y-6">
-                    <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-[11px] uppercase tracking-[0.18em] text-purple-100">
+                    <div
+                      className="inline-flex items-center gap-2 rounded-full border px-4 py-2 text-[11px] uppercase tracking-[0.18em]"
+                      style={surface}
+                    >
                       <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
                       Start streaming
                     </div>
 
                     <div className="space-y-3">
-                      <h2 className="text-2xl sm:text-3xl font-semibold text-zinc-50">
+                      <h2 className={`text-2xl sm:text-3xl font-semibold ${textPrimary}`}>
                         Add a YouTube song URL to kick things off
                       </h2>
-                      <p className="text-sm sm:text-base text-zinc-400 max-w-2xl mx-auto">
+                      <p className={`text-sm sm:text-base ${textSecondary} max-w-2xl mx-auto`}>
                         Drop a link in the field above and we will queue it for everyone. Bring your friends in by sharing the room link.
                       </p>
                     </div>
@@ -748,13 +792,15 @@ export default function StreamsView({
                         <Image
                           width={1080}
                           height={916}
-                          className="rounded-2xl w-full h-full max-h-[260px] object-cover border border-white/10 shadow-lg shadow-purple-900/20"
+                          className="rounded-2xl w-full h-full max-h-[260px] object-cover border shadow-lg"
+                          style={surface}
                           src={thumbnail}
                           alt="Upcoming stream preview"
                         />
                         <button
                           onClick={handleSubmit}
-                          className="inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-purple-500 via-fuchsia-500 to-orange-400 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-purple-500/30 transition hover:shadow-purple-400/40"
+                          className="inline-flex items-center justify-center gap-2 rounded-2xl px-5 py-3 text-sm font-semibold text-white shadow-lg transition hover:shadow-[0_16px_38px_rgba(0,0,0,0.16)]"
+                          style={{ background: "linear-gradient(120deg, var(--accent-amber), var(--accent-rose), var(--accent-cyan))", boxShadow: "0 18px 46px rgba(0,0,0,0.12)" }}
                           disabled={addStreamLoading}
                         >
                           {addStreamLoading ? "Adding..." : "Play now"}
@@ -763,7 +809,7 @@ export default function StreamsView({
                       </div>
                     )}
 
-                    <p className="text-xs text-zinc-500">
+                    <p className={`text-xs ${textSecondary}`}>
                       Tip: paste the link, then hit enter or the arrow button to add it to the queue.
                     </p>
                   </div>
