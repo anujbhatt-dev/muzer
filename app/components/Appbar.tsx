@@ -73,7 +73,7 @@ export default function Appbar() {
       initial={{ y: 0 }}
       animate={{ y: visible ? 0 : -110 }}
       transition={{ duration: 0.25, ease: "easeInOut" }}
-      className={`${positionClass} inset-x-0 -top-4 z-50 flex justify-center pointer-events-none`}
+      className={`${positionClass} inset-x-0 -top-1 z-50 flex justify-center pointer-events-none`}
     >
       <div
         className={`pointer-events-auto relative mt-0 flex ${pathname === "/" ? "max-w-6xl w-[92%]" : "w-full mx-4"}  items-center justify-between gap-3 rounded-b-2xl border px-4 py-3 sm:px-6 sm:py-4 transition-all duration-300 backdrop-blur-2xl shadow-[0_18px_36px_-18px_rgba(0,0,0,0.45)]`}
